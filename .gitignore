@@ -6,8 +6,36 @@ __pycache__/
 # C extensions
 *.so
 
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Eclipse
+/.project
+/.classpath
+
+### VS Code ###
+.vscode/
+
 # Distribution / packaging
 .Python
+*.iws
+*.iml
+*.ipr
+logs/
+npm-debug.log
+yarn-error.log
+node_modules/
+package-lock.json
+yarn.lock
+coverage/
+.idea/
+run/
+.DS_Storew*
+*.un~
+typings/
+.nyc_output/
 tests/
 migrations/
 build/
