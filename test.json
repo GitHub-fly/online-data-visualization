@@ -1,0 +1,10 @@
+{
+  "sqlName": "PostgreSQL",
+  "cover": "https://chinese.freecodecamp.org/news/content/images/2020/12/iShot2020-12-04-14.24.51.png",
+  "connName": "2",
+  "host": "2",
+  "port": "2",
+  "database": "2",
+  "userName": "2",
+  "password": "2"
+}
