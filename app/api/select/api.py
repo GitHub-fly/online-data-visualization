@@ -1,9 +1,7 @@
 from . import select  # . 表示同目录层级下
 from app.models import Tb_1
 from app.utils.APIResponse import APIResponse
-import xlrd
-from flask import Flask, request, jsonify
-import numpy as np
+from flask import request
 import pandas as pd
 import os
 
@@ -19,7 +17,7 @@ def test():
 def filelist1():
     files = request.files
     filelist = files.getlist('file')
-    li = object
+    li = []
     for file in filelist:
         if os.path.splitext(file.filename)[-1] == '.csv':
             data = pd.read_csv(file, header=None)

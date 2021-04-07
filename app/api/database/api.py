@@ -1,7 +1,6 @@
 from . import database
-from flask import Flask, request
+from flask import request
 from sqlalchemy import create_engine
-import pymysql
 
 from ...utils.APIResponse import APIResponse
 
@@ -13,6 +12,7 @@ conn = None
 def change_sql_conn():
     global conn
     conn_obj = request.get_json()  # get_json() 返回 dict 类型
+    print(conn_obj)
     sql_type = conn_obj['sqlType'].lower()
     try:
         if sql_type == 'mysql':
@@ -27,6 +27,8 @@ def change_sql_conn():
                 conn_obj['port'], conn_obj['database']
             ))
             conn = engine.connect()
-    except BaseException:
+    except Exception:
+        print('连接失败！')
         return APIResponse(400, '连接失败').body()
+    print('连接成功！')
     return APIResponse(200, '连接成功').body()
