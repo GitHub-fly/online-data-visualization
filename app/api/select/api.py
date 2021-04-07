@@ -1,4 +1,3 @@
-from flask import jsonify
 from . import select  # . 表示同目录层级下
 from app.models import Tb_1
 from app.utils.APIResponse import APIResponse
