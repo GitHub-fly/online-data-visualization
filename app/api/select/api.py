@@ -15,19 +15,20 @@ def test():
     return res.body()
 
 
-@select.route("/uploadfile", methods=["POST"])
-def filelist1():
+@select.route("/uploadFile", methods=["POST"])
+def upload_file():
     files = request.files
-    filelist = files.getlist('file')
-    li = object
-    for file in filelist:
+    file_list = files.getlist('file')
+    li = []
+    for file in file_list:
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, header=None)
+            data = pd.read_csv(file, keep_default_na=False, header=None)
             li = data.values.tolist()
         else:
-            columns = pd.read_excel(file).columns
-            rows = pd.read_excel(file).values
-            li.append(columns)
+            columns = pd.read_excel(file, keep_default_na=False).columns
+            rows = pd.read_excel(file, keep_default_na=False).values
+            li.append(columns.to_list())
+            print(type(rows))
             for i in rows:
-                li.append(i)
+                li.append(i.tolist())
     return APIResponse(200, li).body()
