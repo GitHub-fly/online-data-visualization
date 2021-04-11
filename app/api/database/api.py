@@ -3,13 +3,10 @@ from flask import request
 from sqlalchemy import create_engine
 from ...utils.APIResponse import APIResponse
 
-# 数据库连接对象
-conn = None
-
 
 @database.route("/conn", methods=["POST"])
 def change_sql_conn():
-    global conn
+    conn = {}
     conn_obj = request.get_json()  # get_json() 返回 dict 类型
     print(conn_obj)
     sql_type = conn_obj['sqlType'].lower()
@@ -29,5 +26,8 @@ def change_sql_conn():
     except Exception:
         print('连接失败！')
         return APIResponse(400, '连接失败').body()
+    finally:
+        print('关闭数据库连接')
+        conn.close()
     print('连接成功！')
     return APIResponse(200, '连接成功').body()
