@@ -1,8 +1,6 @@
 from . import database
 from flask import Flask, request
 from sqlalchemy import create_engine
-import pymysql
-
 from ...utils.APIResponse import APIResponse
 
 # 数据库连接对象
@@ -13,6 +11,7 @@ conn = None
 def change_sql_conn():
     global conn
     conn_obj = request.get_json()  # get_json() 返回 dict 类型
+    print(conn_obj)
     sql_type = conn_obj['sqlType'].lower()
     try:
         if sql_type == 'mysql':
