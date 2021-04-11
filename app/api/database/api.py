@@ -1,7 +1,6 @@
 from . import database
 from flask import request
 from sqlalchemy import create_engine
-
 from ...utils.APIResponse import APIResponse
 
 # 数据库连接对象
