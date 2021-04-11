@@ -32,3 +32,8 @@ def upload_file():
             for i in rows:
                 li.append(i.tolist())
     return APIResponse(200, li).body()
+
+
+@select.route("/selectAllTable", methods=["Get"])
+def select_all_table():
+    return APIResponse(200, 'all').body()
