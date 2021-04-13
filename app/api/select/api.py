@@ -5,9 +5,7 @@ from app.models import Tb_1
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
 import psycopg2
-import xlrd
-from flask import Flask, request, jsonify
-import numpy as np
+from flask import request
 import pandas as pd
 import os
 

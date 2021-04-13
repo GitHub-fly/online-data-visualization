@@ -2,8 +2,9 @@
     初始化 app、db
     注册蓝图
 """
-from flask import Flask, make_response
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+
 from config import config_map
 from flask_cors import *
 
@@ -30,6 +31,7 @@ def create_app(dev_name):
     CORS(app, resources=r'/*')
     config_class = config_map.get(dev_name)
     app.config.from_object(config_class)  # 从类中读取需要的信息
+    app.config['JSON_AS_ASCII'] = False
     db.init_app(app)  # 实例化的数据库配置信息
 
     # 注册蓝图
