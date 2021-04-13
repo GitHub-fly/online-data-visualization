@@ -1,3 +1,5 @@
+from sqlalchemy.orm import sessionmaker
+
 from . import select  # . 表示同目录层级下
 from app.models import Tb_1
 from app.utils.APIResponse import APIResponse
@@ -36,13 +38,15 @@ def upload_file():
     return APIResponse(200, li).body()
 
 
-@select.route("/selectAllTable", methods=["POST"])
+@select.route("/allTable", methods=["POST"])
 def select_all_table():
+    print('进入all_table')
     # 获取前端传来的连接对象
     conn_obj = request.get_json()
     print(conn_obj)
     # 使用psycopg2库连接PG数据库,database参数可为postgres
-    air_conn = psycopg2.connect(database=str(conn_obj['database']).lower(), user=conn_obj['userName'], password=conn_obj['password'],
+    air_conn = psycopg2.connect(database=str(conn_obj['database']).lower(), user=conn_obj['userName'],
+                                password=conn_obj['password'],
                                 host=conn_obj['host'], port=conn_obj['port'])
     # 获取游标
     air_cursor = air_conn.cursor()
@@ -63,7 +67,7 @@ def select_all_table():
     return APIResponse(200, tablename_all).body()
 
 
-@select.route("/selectAllColumn", methods=["POST"])
+@select.route("/allColumn", methods=["POST"])
 def select_all_column():
     # 接收前端参数
     select_obj = request.get_json()
@@ -80,3 +84,25 @@ def select_all_column():
     # 取出数据帧中 “column_name” 列所有数据 => 该数据库下所有表名 ，并把dataFrame型转为list型
     column_all = data_h['column_name'].tolist()
     return APIResponse(200, column_all).body()
+
+
+@select.route("/allData", methods=["POST"])
+def select_all_data():
+    # 接收前端参数
+    select_obj = request.get_json()
+    # 连接数据库
+    airport_engine = create_engine('{}://{}:{}@{}:{}/{}'.format(
+        str(select_obj['sqlType']).lower(), select_obj['userName'], select_obj['password'], select_obj['host'],
+        select_obj['port'], select_obj['database']
+    ))
+
+    # Session = sessionmaker(bind = airport_engine)
+    # session = Session()
+    #
+    # data = session.query((select_obj['tableName']))
+
+    data = pd.read_sql("select * from name")
+
+    print(data.tolist())
+
+    return APIResponse(200, data.tolist()).body()
