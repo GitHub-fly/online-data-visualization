@@ -46,13 +46,5 @@ def column_rename():
 
 
 if __name__ == '__main__':
-    # start = time.time()
-    # cursor.execute('select * from sample_1k_flts')
-    # data = cursor.fetchall()
-    # end = time.time()
-    # print('相差===========================')
-    # print(end - start)
-    # print('+++++++++++++++++++++++++++++++++++')
-    # print('共{}条数据'.format(len(data)))
-    # db_util.close_con(conn, cursor)
     table_rename()
+
