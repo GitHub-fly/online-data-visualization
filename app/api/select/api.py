@@ -18,21 +18,27 @@ def test():
 
 
 @select.route("/uploadFile", methods=["POST"])
-def upload_file():
+def upload_files():
     files = request.files
     file_list = files.getlist('file')
+    print(file_list)
     li = []
     for file in file_list:
+        upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
             data = pd.read_csv(file, keep_default_na=False, header=None)
-            li = data.values.tolist()
+            upload_file['name'] = file.filename
+            upload_file['file_list'] = data.values.tolist()
         else:
             columns = pd.read_excel(file, keep_default_na=False).columns
             rows = pd.read_excel(file, keep_default_na=False).values
-            li.append(columns.to_list())
-            print(type(rows))
+            upload_file['name'] = file.filename
+            upload_file['file_list'] = []
+            upload_file['file_list'].append(columns.to_list())
             for i in rows:
-                li.append(i.tolist())
+                upload_file['file_list'].append(i.tolist())
+        li.append(upload_file)
+    print(len(li))
     return APIResponse(200, li).body()
 
 

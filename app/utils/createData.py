@@ -1,7 +1,7 @@
 import psycopg2
 
 if __name__ == '__main__':
-    air_conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
+    air_conn = psycopg2.connect(database='postgres', user='postgres', password='123321', host='localhost', port=5433)
     # 获取游标
     air_cursor = air_conn.cursor()
     arr = ['RENAME 省 TO province', 'RENAME 省确诊 TO pro_ensure', 'RENAME 省治愈 TO pro_cure',
