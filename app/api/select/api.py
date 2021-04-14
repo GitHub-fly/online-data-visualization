@@ -36,6 +36,16 @@ def upload_file():
     return APIResponse(200, li).body()
 
 
+
+'''
+{
+    "database": "airfast",
+    "userName": "postgres",
+    "password": "root",
+    "host": "localhost",
+    "port": 5432
+}
+'''
 @select.route("/allTable", methods=["POST"])
 def select_all_table():
     print('进入all_table')
@@ -65,6 +75,18 @@ def select_all_table():
     return APIResponse(200, tablename_all).body()
 
 
+
+'''
+{
+    "tableName": "name", 
+    "sqlType": "postgresql", 
+    "userName": "postgres", 
+    "password": "root",
+    "host": "localhost", 
+    "port": "5432", 
+    "database": "postgres"
+}
+'''
 @select.route("/allColumn", methods=["POST"])
 def select_all_column():
     # 接收前端参数
