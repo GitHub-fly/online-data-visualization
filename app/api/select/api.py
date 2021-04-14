@@ -1,8 +1,7 @@
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
-import psycopg2
-from app.utils.databaseUtil import get_post_conn, close_con
+from app.utils.databaseUtil import get_post_conn, close_con, paging
 from flask import request
 import pandas as pd
 import os
@@ -95,16 +94,11 @@ def select_all_data():
     select_obj = request.get_json()
     conn = get_post_conn(select_obj)
     cur = conn.cursor()
-    # 第几页
-    page = select_obj['page'] - 1
-    limit_count = 100
-    # 判断前端传递过来的参数中是否含有 'limitCount'
-    if hasattr(select_obj, 'limitCount'):
-        # 每页多少条数据
-        limit_count = select_obj['limitCount']
-    # 开始查询的起点
-    start = page * limit_count
-    cur.execute('SELECT * FROM {} LIMIT {} offset {};'.format(select_obj['tableName'], limit_count, start))
+    # 获取分页结果
+    res = paging(select_obj)
+    start = res[0]
+    offset = res[1]
+    cur.execute('SELECT * FROM {} LIMIT {} offset {};'.format(select_obj['tableName'], offset, start))
     data = cur.fetchall()
     print(data)
     close_con(conn, cur)
@@ -113,19 +107,32 @@ def select_all_data():
 
 @select.route("/addDataByColumn", methods=["POST"])
 def select_all_table_column():
+    """
+    查询某张表中某个字段的所有数据带分页
+    limitCount：可选项，默认为100条
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "columnName": "city",
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres",
+        "page": 1,
+        "limitCount": 100
+    }
+    :return:
+    """
     obj = request.get_json()
     conn = get_post_conn(obj)
     cur = conn.cursor()
-    # 第几页
-    page = obj['page'] - 1
-    limit_count = 100
-    # 判断前端传递过来的参数中是否含有 'limitCount'
-    if hasattr(obj, 'limitCount'):
-        # 每页多少条数据
-        limit_count = obj['limitCount']
-    # 开始查询的起点
-    start = page * limit_count
-    cur.execute('SELECT {} FROM {} LIMIT {} offset {};'.format(obj['columnName'], obj['tableName'], limit_count, start))
+    # 获取分页结果
+    res = paging(obj)
+    start = res[0]
+    offset = res[1]
+    cur.execute('SELECT {} FROM {} LIMIT {} offset {};'.format(obj['columnName'], obj['tableName'], offset, start))
     data = cur.fetchall()
     print(data)
     close_con(conn, cur)
