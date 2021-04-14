@@ -1,20 +1,11 @@
-from sqlalchemy.orm import sessionmaker
-
 from . import select  # . 表示同目录层级下
-from app.models import Tb_1
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
 import psycopg2
+from app.utils.databaseUtil import get_post_conn, close_con
 from flask import request
 import pandas as pd
 import os
-
-
-@select.route("/test", methods=["GET"])
-def test():
-    tb = Tb_1.query.get(2).tb_1_dict()
-    res = APIResponse(200, tb)
-    return res.body()
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -49,18 +40,15 @@ def select_all_table():
     conn_obj = request.get_json()
     print(conn_obj)
     # 使用psycopg2库连接PG数据库,database参数可为postgres
-    air_conn = psycopg2.connect(database=str(conn_obj['database']).lower(), user=conn_obj['userName'],
-                                password=conn_obj['password'],
-                                host=conn_obj['host'], port=conn_obj['port'])
+    air_conn = get_post_conn(conn_obj)
     # 获取游标
     air_cursor = air_conn.cursor()
     # 执行sql
     air_cursor.execute("select * from pg_tables where schemaname = 'public'")
     # 接收返回结果集
     data = air_cursor.fetchall()
-    # 关闭数据库连接
-    air_conn.close
-
+    # 关闭连接
+    close_con(air_conn, air_cursor)
     # 定义空数组，盛放连接中所有的表名
     tablename_all = []
     # 循环结果集（结果集格式为列表套元组）
@@ -92,21 +80,59 @@ def select_all_column():
 
 @select.route("/allData", methods=["POST"])
 def select_all_data():
+    """
+    查询指定数据库中某表的所有数据，采用分页实现
+    limitCount：可选项，默认为100条
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres",
+        "page": 1,
+        "limitCount": 100
+    }
+    :return:
+    """
     # 接收前端参数
     select_obj = request.get_json()
-    # 连接数据库
-    airport_engine = create_engine('{}://{}:{}@{}:{}/{}'.format(
-        str(select_obj['sqlType']).lower(), select_obj['userName'], select_obj['password'], select_obj['host'],
-        select_obj['port'], select_obj['database']
-    ))
+    conn = get_post_conn(select_obj)
+    cur = conn.cursor()
+    # 第几页
+    page = select_obj['page'] - 1
+    limit_count = 100
+    # 判断前端传递过来的参数中是否含有 'limitCount'
+    if hasattr(select_obj, 'limitCount'):
+        # 每页多少条数据
+        limit_count = select_obj['limitCount']
+    # 开始查询的起点
+    start = page * limit_count
+    cur.execute('SELECT * FROM {} LIMIT {} offset {};'.format(select_obj['tableName'], limit_count, start))
+    data = cur.fetchall()
+    print(data)
+    close_con(conn, cur)
+    return APIResponse(200, data).body()
 
-    # Session = sessionmaker(bind = airport_engine)
-    # session = Session()
-    #
-    # data = session.query((select_obj['tableName']))
 
-    data = pd.read_sql("select * from name")
-
-    print(data.tolist())
-
-    return APIResponse(200, data.tolist()).body()
+@select.route("/addDataByColumn", methods=["POST"])
+def select_all_table_column():
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cur = conn.cursor()
+    # 第几页
+    page = obj['page'] - 1
+    limit_count = 100
+    # 判断前端传递过来的参数中是否含有 'limitCount'
+    if hasattr(obj, 'limitCount'):
+        # 每页多少条数据
+        limit_count = obj['limitCount']
+    # 开始查询的起点
+    start = page * limit_count
+    cur.execute('SELECT {} FROM {} LIMIT {} offset {};'.format(obj['columnName'], obj['tableName'], limit_count, start))
+    data = cur.fetchall()
+    print(data)
+    close_con(conn, cur)
+    return APIResponse(200, data).body()
