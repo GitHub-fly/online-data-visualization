@@ -1,19 +1,40 @@
 import psycopg2
+import pymysql
+import pandas as pd
+from sqlalchemy import create_engine
 
 if __name__ == '__main__':
-    air_conn = psycopg2.connect(database='airfast', user='postgres', password='root', host='localhost', port=5432)
-    # 获取游标
-    air_cursor = air_conn.cursor()
+
+
+    """ mysql库的数据格式化 """
+    mysql_conn = create_engine("mysql+pymysql://root:root@localhost:3306/db_mysql")
     arr = ['RENAME 省 TO province', 'RENAME 省确诊 TO pro_ensure', 'RENAME 省治愈 TO pro_cure',
            'RENAME 省死亡 TO pro_die', 'RENAME 市 TO city', 'RENAME 新增确诊 TO add_ensure',
            'RENAME 新增治愈 TO add_cure', 'RENAME 新增死亡 TO add_die', 'RENAME 确诊 TO ensure',
            'RENAME 治愈 TO cure', 'RENAME 死亡 TO die', 'RENAME 日期 TO date']
     for i in arr:
         sql = 'ALTER TABLE public."nCov_china_0313" {};'.format(i)
-        # 执行sql
-        air_cursor.execute(sql)
-    # 提交修改
-    air_conn.commit()
+        pd.read_sql(sql)
+
+
+
+    # """ postgres的数据格式化 """
+    # air_conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
+    # # 获取游标
+    # air_cursor = air_conn.cursor()
+    # arr = ['RENAME 省 TO province', 'RENAME 省确诊 TO pro_ensure', 'RENAME 省治愈 TO pro_cure',
+    #        'RENAME 省死亡 TO pro_die', 'RENAME 市 TO city', 'RENAME 新增确诊 TO add_ensure',
+    #        'RENAME 新增治愈 TO add_cure', 'RENAME 新增死亡 TO add_die', 'RENAME 确诊 TO ensure',
+    #        'RENAME 治愈 TO cure', 'RENAME 死亡 TO die', 'RENAME 日期 TO date']
+    # for i in arr:
+    #     sql = 'ALTER TABLE public."nCov_china_0313" {};'.format(i)
+    #     # 执行sql
+    #     air_cursor.execute(sql)
+    # # 提交修改
+    # air_conn.commit()
+
+
+
 
     # air_cursor.execute('select * from public.sample_1k_flts')
     # data = air_cursor.fetchall()
@@ -25,6 +46,6 @@ if __name__ == '__main__':
     #     print(a)
     #     print(i)
     # 关闭数据库连接
-    air_cursor.close()
-    air_conn.close()
+    # air_cursor.close()
+    # air_conn.close()
 
