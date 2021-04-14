@@ -1,9 +1,38 @@
 import psycopg2
 
-if __name__ == '__main__':
-    air_conn = psycopg2.connect(database='postgres', user='postgres', password='123321', host='localhost', port=5433)
-    # 获取游标
-    air_cursor = air_conn.cursor()
+
+conn = psycopg2.connect(database='postgres', user='postgres', password='123321', host='localhost', port=5433)
+cursor = conn.cursor()
+
+
+def close_con(a, b):
+    """
+    关闭数据库的连接和指针的连接
+    :param a: 数据库连接对象
+    :param b: 指针对象
+    :return:
+    """
+    a.close()
+    b.close()
+
+
+def table_rename():
+    """
+    修改表名
+    如果表名中出现大小写，必须使用：public."xXXX" 方式来定义表名
+    所以建议所有的表名都改为小写字母
+    :return:
+    """
+    cursor.execute('ALTER TABLE public."nCov_china_0313" RENAME TO ncov_chain')
+    conn.commit()
+    close_con(conn, cursor)
+
+
+def column_rename():
+    """
+    修改字段名称
+    :return:
+    """
     arr = ['RENAME 省 TO province', 'RENAME 省确诊 TO pro_ensure', 'RENAME 省治愈 TO pro_cure',
            'RENAME 省死亡 TO pro_die', 'RENAME 市 TO city', 'RENAME 新增确诊 TO add_ensure',
            'RENAME 新增治愈 TO add_cure', 'RENAME 新增死亡 TO add_die', 'RENAME 确诊 TO ensure',
@@ -11,20 +40,12 @@ if __name__ == '__main__':
     for i in arr:
         sql = 'ALTER TABLE ncov_china {};'.format(i)
         # 执行sql
-        air_cursor.execute(sql)
+        cursor.execute(sql)
     # 提交修改
-    air_conn.commit()
+    conn.commit()
+    close_con(conn, cursor)
 
-    # air_cursor.execute('select * from public.sample_1k_flts')
-    # data = air_cursor.fetchall()
-    # print('+++++++++++++++++++++++++++++++++++')
-    # print('共{}条数据'.format(len(data)))
-    # a = 0
-    # for i in data:
-    #     a = a + 1
-    #     print(a)
-    #     print(i)
-    # 关闭数据库连接
-    air_cursor.close()
-    air_conn.close()
+
+if __name__ == '__main__':
+    table_rename()
 

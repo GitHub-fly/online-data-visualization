@@ -24,3 +24,20 @@ def close_con(conn, cursor):
     cursor.close()
     conn.close()
 
+
+def paging(conn_obj):
+    """
+    将前端传递过来的对象进行分页处理
+    :param conn_obj: 前端传递过来的连接对象等信息
+    :return: 分页的起始点和查询条数
+    """
+    # 第几页
+    page = conn_obj['page'] - 1
+    limit_count = 100
+    # 判断前端传递过来的参数中是否含有 'limitCount'
+    if hasattr(conn_obj, 'limitCount'):
+        # 每页多少条数据
+        limit_count = conn_obj['limitCount']
+    # 开始查询的起点
+    start = page * limit_count
+    return start, limit_count
