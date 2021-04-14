@@ -1,3 +1,5 @@
+import psycopg2
+
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
@@ -41,12 +43,12 @@ def select_all_table():
     print('============================进入all_table接口============================')
     # 获取前端传来的连接对象
     conn_obj = request.get_json()
-    # print("连接对象：", conn_obj)
+    print("连接对象：", conn_obj)
     # 定义空数组，盛放连接中所有的表名
     table_name_all = []
 
     # 如果数据库类型是PG
-    if conn_obj['sqlType'] == 'postgresql':
+    if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 使用psycopg2库连接PG数据库
         conn = psycopg2.connect(database=str(conn_obj['database']).lower(), user=conn_obj['userName'],
                                 password=conn_obj['password'],
@@ -99,7 +101,7 @@ def select_all_column():
     conn_obj = request.get_json()
     column_all = []
 
-    if conn_obj['sqlType'] == 'postgresql':
+    if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 连接PG数据库
         postgres_engine = create_engine('{}://{}:{}@{}:{}/{}'.format(
             str(conn_obj['sqlType']).lower(), conn_obj['userName'], conn_obj['password'], conn_obj['host'],
