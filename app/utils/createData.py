@@ -9,7 +9,7 @@ if __name__ == '__main__':
            'RENAME 新增治愈 TO add_cure', 'RENAME 新增死亡 TO add_die', 'RENAME 确诊 TO ensure',
            'RENAME 治愈 TO cure', 'RENAME 死亡 TO die', 'RENAME 日期 TO date']
     for i in arr:
-        sql = 'ALTER TABLE public."nCov_china_0313" {};'.format(i)
+        sql = 'ALTER TABLE ncov_china {};'.format(i)
         # 执行sql
         air_cursor.execute(sql)
     # 提交修改
