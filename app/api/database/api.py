@@ -26,8 +26,7 @@ def change_sql_conn():
     except Exception:
         print('连接失败！')
         return APIResponse(400, '连接失败').body()
-    finally:
-        print('关闭数据库连接')
-        conn.close()
     print('连接成功！')
+    print('关闭数据库连接')
+    conn.close()
     return APIResponse(200, '连接成功').body()
