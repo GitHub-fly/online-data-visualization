@@ -35,7 +35,7 @@ def paging(conn_obj):
     page = conn_obj['page'] - 1
     limit_count = 100
     # 判断前端传递过来的参数中是否含有 'limitCount'
-    if hasattr(conn_obj, 'limitCount'):
+    if conn_obj.__contains__('limitCount'):
         # 每页多少条数据
         limit_count = conn_obj['limitCount']
     # 开始查询的起点

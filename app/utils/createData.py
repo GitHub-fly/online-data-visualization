@@ -46,6 +46,6 @@ def column_rename():
     close_con(conn, cursor)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     table_rename()
 

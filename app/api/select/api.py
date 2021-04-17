@@ -88,7 +88,6 @@ def select_all_table():
     return APIResponse(200, table_name_all).body()
 
 
-
 @select.route("/allColumn", methods=["POST"])
 def select_all_column():
     """
@@ -120,8 +119,8 @@ def select_all_column():
 
         # pandas的数据输出显示设置
         pd.set_option('display.max_columns', 1000)  # 最大列数
-        pd.set_option('display.max_colwidth', 20)   # 最大列宽
-        pd.set_option('display.width', 1000)        # 显示区域的总宽度，以总字符数计算
+        pd.set_option('display.max_colwidth', 20)  # 最大列宽
+        pd.set_option('display.width', 1000)  # 显示区域的总宽度，以总字符数计算
 
         print(data)
         # 取出数据帧中 “column_name” 列所有数据 => 该数据库下所有表名 ，并把dataFrame型转为list型
@@ -183,10 +182,11 @@ def select_all_table_column():
     """
     查询某张表中某个字段的所有数据带分页
     limitCount：可选项，默认为100条
+    columnName: 当
     其它属性为必选项
     {
         "tableName": "ncov_china",
-        "columnName": "city",
+        "columnName": ["city", "add_ensure"],
         "sqlType": "postgresql",
         "userName": "postgres",
         "password": "root",
@@ -205,7 +205,21 @@ def select_all_table_column():
     res = paging(obj)
     start = res[0]
     offset = res[1]
-    cur.execute('SELECT {} FROM {} LIMIT {} offset {};'.format(obj['columnName'], obj['tableName'], offset, start))
+    sql = 'SELECT'
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + ' *'
+    else:
+        arr = obj['columnName']
+        # 循环拼接字段名
+        for i in arr:
+            sql = (sql + ' {},').format(i)
+        # 删除末尾的 ‘,’
+        sql = sql.strip(',')
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {} LIMIT {} offset {};').format(obj['tableName'], offset, start)
+    print(sql)
+    # 执行 sql
+    cur.execute(sql)
     data = cur.fetchall()
     print(data)
     close_con(conn, cur)
