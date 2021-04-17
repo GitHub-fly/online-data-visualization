@@ -182,7 +182,7 @@ def select_all_table_column():
     """
     查询某张表中某个字段的所有数据带分页
     limitCount：可选项，默认为100条
-    columnName: 当
+    columnName: 当此参数不写或者为 [] 时，默认为所有字段
     其它属性为必选项
     {
         "tableName": "ncov_china",
