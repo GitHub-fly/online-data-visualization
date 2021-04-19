@@ -1,4 +1,5 @@
 import psycopg2
+import pandas as pd
 
 
 def get_post_conn(obj):
@@ -41,3 +42,10 @@ def paging(conn_obj):
     # 开始查询的起点
     start = page * limit_count
     return start, limit_count
+
+
+def display_df():
+    # df显示设置
+    pd.set_option('display.max_colwidth', 1000)  # 最大列宽
+    pd.set_option('display.width', 10000)  #
+    pd.set_option('display.min_rows', 1000)  #

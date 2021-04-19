@@ -7,6 +7,7 @@ from app.utils.databaseUtil import get_post_conn, close_con, paging
 from flask import request
 import pandas as pd
 import os
+import json
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -83,10 +84,11 @@ def select_all_table():
         df = pd.read_sql(sql_str, engine)
         # 将DF型的查询结果转为list型
         table_name_all = df['TABLE_NAME'].tolist()
+
+        # table_name_all = [{id: 0, name: 'db_mysql',isSelect: false}]
     print("所有表名的查询结果：")
     print(table_name_all)
     return APIResponse(200, table_name_all).body()
-
 
 
 @select.route("/allColumn", methods=["POST"])
@@ -117,12 +119,6 @@ def select_all_column():
         data = pd.read_sql(
             "select * from information_schema.columns where table_schema='public' and table_name=%(name)s",
             con=postgres_engine, params={'name': conn_obj['tableName']})
-
-        # pandas的数据输出显示设置
-        pd.set_option('display.max_columns', 1000)  # 最大列数
-        pd.set_option('display.max_colwidth', 20)   # 最大列宽
-        pd.set_option('display.width', 1000)        # 显示区域的总宽度，以总字符数计算
-
         print(data)
         # 取出数据帧中 “column_name” 列所有数据 => 该数据库下所有表名 ，并把dataFrame型转为list型
         column_all = data['column_name'].tolist()
@@ -210,3 +206,47 @@ def select_all_table_column():
     print(data)
     close_con(conn, cur)
     return APIResponse(200, data).body()
+
+
+@select.route("/filterData", methods=["POST"])
+def filter_data():
+    """
+        obj = {"tableName": "sample_1k_flts",
+               "columnName": ["day_id", "pax_qty", "net_amt"],
+               "sqlType": "postgresql",
+               "userName": "postgres",
+               "password": "root",
+               "host": "localhost",
+               "port": "5432",
+               "database": "postgres",
+               "dimensionMode": "W",
+               "targetMode": "max"}
+        columnName可以传数组，第一个值，必须传维度字段
+        dimensionMode: "W" 或者 "M" 或者 "Y" ，以周或月或年为单位聚合数据
+        targetMode："max"或"sum"或"mean", 计算指标的最大值，或求和，或平均值
+    """
+    obj = request.get_json()
+    print(obj)
+    conn = get_post_conn(obj)
+    columnName = obj['columnName']
+    # 将传过来的columnName拼接为字符串，用作被查询的列名
+    tag = ','
+    select_column = tag.join(columnName)
+    # 构造sql语句
+    sql = "SELECT {} FROM {};".format(select_column, obj['tableName'])
+    # 执行sql
+    data = pd.read_sql(sql, conn)
+    # 将df中类型为时间的列转为datetime型
+    data[columnName[0]] = pd.to_datetime(data[columnName[0]], format='%d/%m/%y')
+    # 设置日期为当前df对象的索引
+    data = data.set_index(data[columnName[0]], drop=False)
+    # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
+    target = data.resample(obj['dimensionMode']).agg(obj["targetMode"])
+    # 将时间列的datetime型转为string型
+    target[columnName[0]] = target[columnName[0]].astype('string')
+    # 将dataframe类型转为json返回给前端
+    df_json = target.to_json(orient='records')
+    df_json_load = json.loads(df_json)
+    for i in df_json_load:
+        print(i)
+    return APIResponse(200, df_json_load).body()
