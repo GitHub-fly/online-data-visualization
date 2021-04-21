@@ -179,7 +179,7 @@ def select_all_data():
 
 
 @select.route("/addDataByColumn", methods=["POST"])
-def select_all_table_column():
+def select_all_table_column(self):
     """
     查询某张表中某个字段的所有数据带分页
     limitCount：可选项，默认为100条
@@ -200,6 +200,7 @@ def select_all_table_column():
     :return:
     """
     obj = request.get_json()
+    print(obj)
     conn = get_post_conn(obj)
     cur = conn.cursor()
     # 获取分页结果
