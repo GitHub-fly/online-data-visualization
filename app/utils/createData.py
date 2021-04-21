@@ -1,6 +1,6 @@
 import psycopg2
 
-conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
+conn = psycopg2.connect(database='postgres', user='postgres', password='123321', host='localhost', port=5433)
 cursor = conn.cursor()
 
 
@@ -45,16 +45,11 @@ def column_rename():
     close_con(conn, cursor)
 
 
-<<<<<<< HEAD
 def type_reset():
     """
     修改字段类型
     :return:
     """
-=======
-if __name__ == '__main__': 
-    table_rename()
->>>>>>> 26dbc340ca1e6c3ae7326f58302c7ce0fe49d7f5
 
     int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_arrv_mm', 'flt_seg_dpt_hh', 'flt_seg_dpt_mm', 'flt_seg_seq_nbr',
                'flt_seg_dstnc', 'leg_qty', 'cls_cpc_qty', 'pax_qty',

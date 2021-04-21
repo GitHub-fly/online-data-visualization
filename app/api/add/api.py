@@ -103,7 +103,10 @@ def final_calc(formula_list):
         if not operator:
             # 压入数字栈
             # 字符串转换为符点数
-            num_stack.append(float(e))
+            if (isinstance(e, int) or isinstance(e, float)):
+                num_stack.append(e)
+            else:
+                num_stack.append(float(e))
         else:
             # 如果是运算符
             while True:
@@ -163,7 +166,7 @@ def add_new_table_column():
             else:
                 character.append(item[i])
                 i += 1
-        str = ''.join(character)
+        str = ''.join('%s' %a for a in character)
         formula.append(str)
     for formula_list in formula:
         print('算数式', formula_list)
