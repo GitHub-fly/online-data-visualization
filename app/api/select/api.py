@@ -31,7 +31,11 @@ def upload_files():
             for i in rows:
                 upload_file['file_list'].append(i.tolist())
         li.append(upload_file)
-    print(len(li))
+    print('数据：')
+    for item in li:
+        for it in item['file_list']:
+            print(it)
+        print('========================================')
     return APIResponse(200, li).body()
 
 
@@ -107,7 +111,6 @@ def select_all_column():
     print('============================进入all_column接口============================')
     # 接收前端参数
     conn_obj = request.get_json()
-    column_all = []
 
     if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 连接PG数据库
@@ -266,3 +269,64 @@ def filter_data():
     for i in df_json_load:
         print(i)
     return APIResponse(200, df_json_load).body()
+
+
+@select.route('/diData', methods=['POST'])
+def get_dimensionality_indicator():
+    """
+    获取指定表的所有字段并划分成数字型和非数字型的形式返回
+    {
+        "tableName": "ncov_china",
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres"
+    }
+    :return: 维度数组和指标数组
+    """
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cursor = conn.cursor()
+    # 维度数组
+    dimensionality = []
+    # 指标数组
+    indicator = []
+    sql = """
+        SELECT
+            A.attname AS CO,
+            concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
+        FROM
+            pg_class AS C,
+            pg_attribute AS A,
+            pg_type AS T 
+        WHERE
+            C.relname = '{}'
+            AND A.attnum > 0
+            AND A.attrelid = C.oid 
+            AND A.atttypid = T.oid
+    """.format(obj['tableName'])
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    in_id = 0
+    di_id = 0
+    for tu in data:
+        item = tu[1]
+        if ('int' in item) or ('float' in item):
+            indicator.append({
+                'id': in_id,
+                'name': tu[0]
+            })
+            in_id += 1
+        if ('varchar' in item) or ('char' in item):
+            dimensionality.append({
+                'id': di_id,
+                'name': tu[0]
+            })
+            di_id += 1
+    data = {
+        'dimensionality': dimensionality,
+        'indicator': indicator
+    }
+    return APIResponse(200, data).body()
