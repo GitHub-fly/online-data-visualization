@@ -1,7 +1,6 @@
 import psycopg2
 
-
-conn = psycopg2.connect(database='postgres', user='postgres', password='123321', host='localhost', port=5433)
+conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
 cursor = conn.cursor()
 
 
@@ -46,6 +45,33 @@ def column_rename():
     close_con(conn, cursor)
 
 
+<<<<<<< HEAD
+def type_reset():
+    """
+    修改字段类型
+    :return:
+    """
+=======
 if __name__ == '__main__': 
     table_rename()
+>>>>>>> 26dbc340ca1e6c3ae7326f58302c7ce0fe49d7f5
 
+    int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_arrv_mm', 'flt_seg_dpt_hh', 'flt_seg_dpt_mm', 'flt_seg_seq_nbr',
+               'flt_seg_dstnc', 'leg_qty', 'cls_cpc_qty', 'pax_qty',
+               'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
+    double_arr = ['net_amt', 'y_fr_amt']
+    for i in int_arr:
+        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
+        cursor.execute(sql)
+        print(cursor.execute(sql))
+    for i in double_arr:
+        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
+        cursor.execute(sql)
+        print(cursor.execute(sql))
+
+    conn.commit()
+    close_con(conn, cursor)
+
+
+if __name__ == '__main__':
+    type_reset()
