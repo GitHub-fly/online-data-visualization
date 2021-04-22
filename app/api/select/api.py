@@ -8,6 +8,7 @@ from flask import request
 import pandas as pd
 import os
 import json
+from app.common import APIException
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -107,7 +108,6 @@ def select_all_column():
     print('============================进入all_column接口============================')
     # 接收前端参数
     conn_obj = request.get_json()
-    column_all = []
 
     if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 连接PG数据库
@@ -120,7 +120,6 @@ def select_all_column():
             "select * from information_schema.columns where table_schema='public' and table_name=%(name)s",
             con=postgres_engine, params={'name': conn_obj['tableName']})
 
-        print(data)
         # 取出数据帧中 “column_name” 列所有数据 => 该数据库下所有表名 ，并把dataFrame型转为list型
         column_all = data['column_name'].tolist()
     else:
@@ -176,7 +175,7 @@ def select_all_data():
 
 
 @select.route("/addDataByColumn", methods=["POST"])
-def select_all_table_column(self):
+def select_all_table_column():
     """
     查询某张表中某个字段的所有数据带分页
     limitCount：可选项，默认为100条
@@ -267,3 +266,10 @@ def filter_data():
     for i in df_json_load:
         print(i)
     return APIResponse(200, df_json_load).body()
+
+
+@select.route("test", methods=['GET'])
+def test():
+    if True:
+        raise APIException('请求出错', status_code=500)
+    return APIResponse(200, 'HELLO EXCEPTION').body()

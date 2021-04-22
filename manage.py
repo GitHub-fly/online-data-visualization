@@ -4,6 +4,7 @@
 from app.main import create_app, db
 from flask_script import Manager  # 管理项目的额外制定的一些命令
 from flask_migrate import Migrate, MigrateCommand  # 管理数据库需要的脚本 追踪数据库变化的脚本
+from app.common.APIException import exception
 
 app = create_app("develop")  # 工厂函数模式选择
 manager = Manager(app)  # 用 manage进行项目管理 代管 app
@@ -16,6 +17,9 @@ python3 manage.py db migrate -m "init message" #提交变更
 python3 manage.py db upgrade # 升级变更
 python3 manage.py db downgrade # 降级变更
 """
+
+# 注册蓝图，并指定其对应的前缀（url_prefix）
+app.register_blueprint(exception, url_prefix='/error')
 
 if __name__ == '__main__':
     manager.run()
