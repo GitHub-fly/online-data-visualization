@@ -1,3 +1,6 @@
+import threading
+import time
+
 import psycopg2
 
 from . import select  # . 表示同目录层级下
@@ -9,6 +12,7 @@ import pandas as pd
 import os
 import json
 from app.common import APIException
+from queue import Queue
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -32,7 +36,11 @@ def upload_files():
             for i in rows:
                 upload_file['file_list'].append(i.tolist())
         li.append(upload_file)
-    print(len(li))
+    print('数据：')
+    for item in li:
+        for it in item['file_list']:
+            print(it)
+        print('========================================')
     return APIResponse(200, li).body()
 
 
@@ -267,9 +275,154 @@ def filter_data():
         print(i)
     return APIResponse(200, df_json_load).body()
 
+@select.route('/diData', methods=['POST'])
+def get_dimensionality_indicator():
+    """
+    获取指定表的所有字段并划分成数字型和非数字型的形式返回
+    {
+        "tableName": "ncov_china",
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres"
+    }
+    :return: 维度数组和指标数组
+    """
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cursor = conn.cursor()
+    # 维度数组
+    dimensionality = []
+    # 指标数组
+    indicator = []
+    sql = """
+        SELECT
+            A.attname AS CO,
+            concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
+        FROM
+            pg_class AS C,
+            pg_attribute AS A,
+            pg_type AS T 
+        WHERE
+            C.relname = '{}'
+            AND A.attnum > 0
+            AND A.attrelid = C.oid 
+            AND A.atttypid = T.oid
+    """.format(obj['tableName'])
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    in_id = 0
+    di_id = 0
+    for tu in data:
+        item = tu[1]
+        if ('int' in item) or ('float' in item):
+            indicator.append({
+                'id': in_id,
+                'name': tu[0]
+            })
+            in_id += 1
+        if ('varchar' in item) or ('char' in item):
+            dimensionality.append({
+                'id': di_id,
+                'name': tu[0]
+            })
+            di_id += 1
+    data = {
+        'dimensionality': dimensionality,
+        'indicator': indicator
+    }
+    return APIResponse(200, data).body()
 
-@select.route("test", methods=['GET'])
+
+@select.route('/test', methods=['POST'])
 def test():
-    if True:
-        raise APIException('请求出错', status_code=500)
-    return APIResponse(200, 'HELLO EXCEPTION').body()
+    start = time.time()
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cur = conn.cursor()
+    sql = 'SELECT'
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + ' *'
+    else:
+        arr = obj['columnName']
+        # 循环拼接字段名
+        for i in arr:
+            sql = (sql + ' {},').format(i)
+        # 删除末尾的 ‘,’
+        sql = sql.strip(',')
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {}').format(obj['tableName'])
+    print(sql)
+    # 执行 sql
+    cur.execute(sql)
+    data = cur.fetchall()
+    print(data)
+    close_con(conn, cur)
+    print(time.time() - start)
+    return APIResponse(200, 'test').body()
+
+
+@select.route('/getChartData', methods=['POST'])
+def get_chart_data():
+    """
+    查询某张表中某个字段的所有数据
+    columnName: 指定字段数据
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "columnName": ["city", "add_ensure"],
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres",
+    }
+    :return:
+    """
+    start = time.time()
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    # 创建队列，队列的最大个数及限制线程个数
+    q = Queue(maxsize=10)
+    arr = [[0, 500000], [500000, 500000], [1000000, 500000], [1500000, 500000], [2000000, 500000], [2500000, 500000],
+           [3000000, 500000], [3500000, 500000], [4000000, 500000], [4500000, 500000]]
+    for item in arr:
+        t = threading.Thread(target=fetchall_data, args=(conn, obj, item[1], item[0]))
+        q.put(t)
+        if q.qsize() == 10:
+            join_thread = []
+            while not q.empty():
+                t = q.get()
+                join_thread.append(t)
+                t.start()
+            for t in join_thread:
+                t.join()
+    print(time.time() - start)
+    return APIResponse(200, 'test').body()
+
+
+def fetchall_data(conn, obj, limit, offset):
+    cur = conn.cursor()
+    sql = 'SELECT'
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + ' *'
+    else:
+        arr = obj['columnName']
+        # 循环拼接字段名
+        for i in arr:
+            sql = (sql + ' {},').format(i)
+        # 删除末尾的 ‘,’
+        sql = sql.strip(',')
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {} LIMIT {} OFFSET {};').format(obj['tableName'], limit, offset)
+    print(sql)
+    # 执行 sql
+    cur.execute(sql)
+    # time.sleep(0.5)
+    data = cur.fetchall()
+    print(data)
+    # conn.close()
+    close_con(conn, cur)
