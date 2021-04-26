@@ -6,13 +6,17 @@ import psycopg2
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
-from app.utils.databaseUtil import get_post_conn, close_con, paging
+from app.utils.databaseUtil import get_post_conn, close_con, paging, pool_post_conn, get_page_size
 from flask import request
 import pandas as pd
 import os
 import json
 from app.common import APIException
 from queue import Queue
+from .service.selectService import fetchall_data
+
+all_data_list = []
+lock = threading.Lock()
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -249,6 +253,8 @@ def filter_data():
         dimensionMode: "W" 或者 "M" 或者 "Y" ，以周或月或年为单位聚合数据
         targetMode："max"或"sum"或"mean", 计算指标的最大值，或求和，或平均值
     """
+
+    start = time.time()
     obj = request.get_json()
     print(obj)
     conn = get_post_conn(obj)
@@ -256,12 +262,14 @@ def filter_data():
     # 将传过来的columnName拼接为字符串，用作被查询的列名
     tag = ','
     select_column = tag.join(columnName)
+    print(select_column)
     # 构造sql语句
     sql = "SELECT {} FROM {};".format(select_column, obj['tableName'])
+    print(sql)
     # 执行sql
     data = pd.read_sql(sql, conn)
     # 将df中类型为时间的列转为datetime型
-    data[columnName[0]] = pd.to_datetime(data[columnName[0]], format='%d/%m/%y')
+    data[columnName[0]] = pd.to_datetime(data[columnName[0]])
     # 设置日期为当前df对象的索引
     data = data.set_index(data[columnName[0]], drop=False)
     # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
@@ -273,6 +281,7 @@ def filter_data():
     df_json_load = json.loads(df_json)
     for i in df_json_load:
         print(i)
+    print(time.time() - start)
     return APIResponse(200, df_json_load).body()
 
 @select.route('/diData', methods=['POST'])
@@ -336,34 +345,6 @@ def get_dimensionality_indicator():
     return APIResponse(200, data).body()
 
 
-@select.route('/test', methods=['POST'])
-def test():
-    start = time.time()
-    obj = request.get_json()
-    conn = get_post_conn(obj)
-    cur = conn.cursor()
-    sql = 'SELECT'
-    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
-        sql = sql + ' *'
-    else:
-        arr = obj['columnName']
-        # 循环拼接字段名
-        for i in arr:
-            sql = (sql + ' {},').format(i)
-        # 删除末尾的 ‘,’
-        sql = sql.strip(',')
-    # 拼接表名和分页查询的参数
-    sql = (sql + ' FROM {}').format(obj['tableName'])
-    print(sql)
-    # 执行 sql
-    cur.execute(sql)
-    data = cur.fetchall()
-    print(data)
-    close_con(conn, cur)
-    print(time.time() - start)
-    return APIResponse(200, 'test').body()
-
-
 @select.route('/getChartData', methods=['POST'])
 def get_chart_data():
     """
@@ -378,51 +359,32 @@ def get_chart_data():
         "password": "root",
         "host": "localhost",
         "port": "5432",
-        "database": "postgres",
+        "database": "postgres"
     }
     :return:
     """
     start = time.time()
     obj = request.get_json()
-    conn = get_post_conn(obj)
-    # 创建队列，队列的最大个数及限制线程个数
-    q = Queue(maxsize=10)
-    arr = [[0, 500000], [500000, 500000], [1000000, 500000], [1500000, 500000], [2000000, 500000], [2500000, 500000],
-           [3000000, 500000], [3500000, 500000], [4000000, 500000], [4500000, 500000]]
-    for item in arr:
-        t = threading.Thread(target=fetchall_data, args=(conn, obj, item[1], item[0]))
-        q.put(t)
-        if q.qsize() == 10:
-            join_thread = []
-            while not q.empty():
-                t = q.get()
-                join_thread.append(t)
-                t.start()
-            for t in join_thread:
-                t.join()
-    print(time.time() - start)
-    return APIResponse(200, 'test').body()
-
-
-def fetchall_data(conn, obj, limit, offset):
+    pool = pool_post_conn(obj)
+    conn = pool.connection()
     cur = conn.cursor()
-    sql = 'SELECT'
+    sql = 'SELECT '
     if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
-        sql = sql + ' *'
+        sql = sql + '*'
     else:
-        arr = obj['columnName']
-        # 循环拼接字段名
-        for i in arr:
-            sql = (sql + ' {},').format(i)
-        # 删除末尾的 ‘,’
-        sql = sql.strip(',')
+        sql = sql + ', '.join(obj['columnName'])
     # 拼接表名和分页查询的参数
-    sql = (sql + ' FROM {} LIMIT {} OFFSET {};').format(obj['tableName'], limit, offset)
-    print(sql)
-    # 执行 sql
+    sql = (sql + ' FROM {};').format(obj['tableName'])
     cur.execute(sql)
-    # time.sleep(0.5)
     data = cur.fetchall()
-    print(data)
-    # conn.close()
-    close_con(conn, cur)
+    cur.close()
+    conn.close()
+    end = time.time()
+    # 上锁开始在全局数组内追加数据
+    lock.acquire()
+    global all_data_list
+    index = len(all_data_list)
+    all_data_list.append(data)
+    lock.release()
+    print('执行时间:', end - start)
+    return APIResponse(200, {'allDataListIndex': index}).body()
