@@ -17,7 +17,7 @@ if __name__ == '__main__':
     pd.set_option('display.min_rows', 1000)  #
 
     obj = {"tableName": "sample_1k_flts",
-           "columnName": ["dpt_cty_cd", "pax_qty", "net_amt"],
+           "columnName": ["day_id", "pax_qty", "net_amt"],
            "sqlType": "postgresql",
            "userName": "postgres",
            "password": "root",
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                 # 设置日期为当前df对象的索引
                 data = data.set_index(data[col[0]], drop=False)
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-                target = data.resample(obj['dimensionMode']).agg([obj["targetMode"]])
+                target = data.resample(obj['dimensionMode']).agg(obj["targetMode"])
                 target_sort = target.sort_index()
                 print(target_sort)
             else:

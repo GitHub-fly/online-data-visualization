@@ -239,12 +239,15 @@ def select_all_table_column():
 @select.route("/filterData", methods=["POST"])
 def filter_data():
     obj = request.get_json()
-    col = obj['columnName']
-    data_tuple = all_data_list[0]
-    data = pd.DataFrame.from_records(data_tuple, columns=col)
+    col_all = obj['allColNameList']
+    col = obj['colNameList']
+    data_all = all_data_list[obj['allDataListIndex']]
+    all_data = pd.DataFrame.from_records(data_all, columns=col_all)
+    data = all_data[col]
 
     # 获取到第一个字段的类型
     s_dtype = str(data[col[0]].dtype)
+
 
     # 判断数值类型
     # 数值型
@@ -270,9 +273,13 @@ def filter_data():
                 print('按日期聚合')
                 # 设置日期为当前df对象的索引
                 data = data.set_index(data[col[0]], drop=False)
+                print(data)
+
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-                target = data.resample('W').agg('sum')
-                data_filter_sort = target.sort_index()
+                target = data.resample('M').agg('sum')
+                target.sort_values([col[0]], inplace=True)
+                data_filter_sort = target
+                print(target)
             else:
                 # 按字符聚合
                 print('按字符聚合')
@@ -389,4 +396,7 @@ def get_chart_data():
     all_data_list.append(data)
     lock.release()
     print('执行时间:', end - start)
-    return APIResponse(200, {'allDataListIndex': index}).body()
+    return APIResponse(200, {
+        'colNameList': obj['columnName'],
+        'allDataListIndex': index
+    }).body()
