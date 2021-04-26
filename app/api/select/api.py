@@ -239,6 +239,7 @@ def select_all_table_column():
 @select.route("/filterData", methods=["POST"])
 def filter_data():
     obj = request.get_json()
+    print(obj)
     col_all = obj['allColNameList']
     col = obj['colNameList']
     data_all = all_data_list[obj['allDataListIndex']]
@@ -247,7 +248,6 @@ def filter_data():
 
     # 获取到第一个字段的类型
     s_dtype = str(data[col[0]].dtype)
-
 
     # 判断数值类型
     # 数值型
@@ -338,13 +338,15 @@ def get_dimensionality_indicator():
         if ('int' in item) or ('float' in item):
             indicator.append({
                 'id': in_id,
-                'name': tu[0]
+                'name': tu[0],
+                'dataType': item
             })
             in_id += 1
         if ('varchar' in item) or ('char' in item):
             dimensionality.append({
                 'id': di_id,
-                'name': tu[0]
+                'name': tu[0],
+                'dataType': item
             })
             di_id += 1
     data = {
@@ -393,10 +395,10 @@ def get_chart_data():
     lock.acquire()
     global all_data_list
     index = len(all_data_list)
+    column_name = tuple(obj['columnName'])
+    data.insert(0, column_name)
     all_data_list.append(data)
     lock.release()
     print('执行时间:', end - start)
-    return APIResponse(200, {
-        'colNameList': obj['columnName'],
-        'allDataListIndex': index
-    }).body()
+    print(data[0])
+    return APIResponse(200, {'allDataListIndex': index}).body()
