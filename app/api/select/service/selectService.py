@@ -1,6 +1,8 @@
 import time
 
-from app.utils.databaseUtil import close_con
+import pandas as pd
+
+from app.utils.databaseUtil import close_con, get_post_conn
 
 
 def fetchall_data(pool, obj, item, res_queue):
