@@ -273,24 +273,22 @@ def filter_data():
                 print('按日期聚合')
                 # 设置日期为当前df对象的索引
                 data = data.set_index(data[col[0]], drop=False)
-                print(data)
 
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
                 target = data.resample('M').agg('sum')
                 target.sort_values([col[0]], inplace=True)
                 data_filter_sort = target
-                print(target)
+                data_filter_sort.reset_index(inplace=True)
+                data_filter_sort[col[0]] = data_filter_sort[col[0]].astype('string')
             else:
                 # 按字符聚合
                 print('按字符聚合')
                 data_filter = data.groupby(col[0]).agg(obj['targetMode'], numeric_only=True)
                 data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
                 data_filter_sort.reset_index(inplace=True)
-    df_json = data_filter_sort.to_json(orient='records')
-    df_json_load = json.loads(df_json)
-    for i in df_json_load:
-        print(i)
-    return APIResponse(200, df_json_load).body()
+    # df_json = data_filter_sort.to_json(orient='records')
+    # df_json_load = json.loads(df_json)
+    return APIResponse(200, 'all').body()
 
 
 @select.route('/diData', methods=['POST'])

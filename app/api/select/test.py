@@ -63,6 +63,7 @@ if __name__ == '__main__':
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
                 target = data.resample(obj['dimensionMode']).agg(obj["targetMode"])
                 target_sort = target.sort_index()
+                target_sort.reset_index(inplace=True)
                 print(target_sort)
             else:
                 # 按字符聚合
