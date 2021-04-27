@@ -238,6 +238,8 @@ def select_all_table_column():
 
 @select.route("/filterData", methods=["POST"])
 def filter_data():
+    print('============================进入filter_data接口============================')
+    start = time.time()
     obj = request.get_json()
     print(obj)
     col_all = obj['allColNameList']
@@ -245,35 +247,36 @@ def filter_data():
     data_all = all_data_list[obj['allDataListIndex']]
     all_data = pd.DataFrame.from_records(data_all, columns=col_all)
     data = all_data[col]
-
-    # 获取到第一个字段的类型
+    # 获取到第一列的类型
     s_dtype = str(data[col[0]].dtype)
-
     # 判断数值类型
     # 数值型
     if ('int' in s_dtype) or ('float' in s_dtype):
-        print('维度需要字符型数据！（当前维度为数值型）')
+        print('按数值型聚合')
+        data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
+        data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
+        data_filter_sort.reset_index(inplace=True)
     else:
         # 非数值型
         # 随机获取1条数据判断类型
         data_sp = data[col[0]].sample(1)
         # 如果非nan
-        if data_sp.notna:
+        if data_sp.notna().bool():
             # 判断日期型
             # 将字符串尝试转换为这几种常见的日期形式，转换成功则是日期型
-            pattern = ('%Y_%m_%d', '%Y/%m/%d', '%Y-%m-%d', '%y年%m月%d日', '%y-%m-%d')
+            pattern = ('%Y_%m_%d', '%Y/%m/%d', '%y/%m/%d', '%Y-%m-%d', '%y-%m-%d')
             for i in pattern:
                 try:
                     res = time.strptime(data_sp.iat[0], i)
                     if res:
-                        data[col[0]] = pd.to_datetime(data[col[0]])
+                        data = data.copy()
+                        data[col[0]] = pd.to_datetime(data[col[0]], errors='coerce', infer_datetime_format=True,
+                                                      format='%Y-%m-%d')
                 except:
                     continue
             if 'datetime' in str(data[col[0]].dtype):
                 print('按日期聚合')
-                # 设置日期为当前df对象的索引
-                data = data.set_index(data[col[0]], drop=False)
-
+                data = data.set_index(col[0], drop=False)
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
                 target = data.resample('M').agg('sum')
                 target.sort_values([col[0]], inplace=True)
@@ -283,12 +286,15 @@ def filter_data():
             else:
                 # 按字符聚合
                 print('按字符聚合')
-                data_filter = data.groupby(col[0]).agg(obj['targetMode'], numeric_only=True)
+                data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
                 data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
                 data_filter_sort.reset_index(inplace=True)
-    # df_json = data_filter_sort.to_json(orient='records')
-    # df_json_load = json.loads(df_json)
-    return APIResponse(200, 'all').body()
+    df_json = data_filter_sort.to_json(orient='records')
+    df_json_load = json.loads(df_json)
+    for i in df_json_load:
+        print(i)
+    print('执行时间：', time.time() - start)
+    return APIResponse(200, df_json_load).body()
 
 
 @select.route('/diData', methods=['POST'])
@@ -374,6 +380,7 @@ def get_chart_data():
     """
     start = time.time()
     obj = request.get_json()
+    print(obj)
     pool = pool_post_conn(obj)
     conn = pool.connection()
     cur = conn.cursor()
@@ -393,10 +400,13 @@ def get_chart_data():
     lock.acquire()
     global all_data_list
     index = len(all_data_list)
-    column_name = tuple(obj['columnName'])
-    data.insert(0, column_name)
     all_data_list.append(data)
     lock.release()
     print('执行时间:', end - start)
-    print(data[0])
     return APIResponse(200, {'allDataListIndex': index}).body()
+
+
+@select.route('/test', methods=['POST'])
+def test():
+
+    return 'all'

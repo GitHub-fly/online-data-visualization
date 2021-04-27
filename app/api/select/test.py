@@ -1,5 +1,7 @@
 import time
 
+from pandas.io import json
+
 from app.utils.databaseUtil import get_post_conn, close_con, paging
 from time import strptime
 import pandas as pd
@@ -41,41 +43,45 @@ if __name__ == '__main__':
     s_dtype = str(data[col[0]].dtype)
 
     # 判断数值类型
+    # 数值型
     if ('int' in s_dtype) or ('float' in s_dtype):
         print('维度需要字符型数据！（当前维度为数值型）')
     else:
+        # 非数值型
         # 随机获取1条数据判断类型
         data_sp = data[col[0]].sample(1)
-        if data_sp.notna:
+        # 如果非nan
+        if data_sp.notna().bool():
+            # 判断日期型
             # 将字符串尝试转换为这几种常见的日期形式，转换成功则是日期型
             pattern = ('%Y_%m_%d', '%Y/%m/%d', '%Y-%m-%d', '%y年%m月%d日', '%y-%m-%d')
             for i in pattern:
                 try:
-                    res = strptime(data_sp.iat[0], i)
+                    res = time.strptime(data_sp.iat[0], i)
                     if res:
                         data[col[0]] = pd.to_datetime(data[col[0]])
+                        print( '=====>',  data[col[0]])
                 except:
                     continue
+                print(data[col[0]].dtype)
             if 'datetime' in str(data[col[0]].dtype):
                 print('按日期聚合')
                 # 设置日期为当前df对象的索引
                 data = data.set_index(data[col[0]], drop=False)
+
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-                target = data.resample(obj['dimensionMode']).agg(obj["targetMode"])
-                target_sort = target.sort_index()
-                target_sort.reset_index(inplace=True)
-                print(target_sort)
+                target = data.resample('M').agg('sum')
+                target.sort_values([col[0]], inplace=True)
+                data_filter_sort = target
+                data_filter_sort.reset_index(inplace=True)
+                data_filter_sort[col[0]] = data_filter_sort[col[0]].astype('string')
             else:
                 # 按字符聚合
                 print('按字符聚合')
-                data_filter = data.groupby(col[0]).agg([obj['targetMode']], numeric_only=True)
+                data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
                 data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
-                print(data_filter_sort)
-
-    # # 将时间列的datetime型转为string型
-    # target[columnName[0]] = target[columnName[0]].astype('string')
-    # 将dataframe类型转为json返回给前端
-    # df_json = target.to_json(orient='records')
-    # df_json_load = json.loads(df_json)
-    # for i in df_json_load:
-    #     print(i)
+                data_filter_sort.reset_index(inplace=True)
+    df_json = data_filter_sort.to_json(orient='records')
+    df_json_load = json.loads(df_json)
+    for i in df_json_load:
+        print(i)
