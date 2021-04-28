@@ -1,6 +1,5 @@
 import time
 
-import pandas as pd
 
 from app.utils.databaseUtil import close_con, get_post_conn
 

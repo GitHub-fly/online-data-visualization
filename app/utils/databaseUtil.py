@@ -3,6 +3,7 @@ import time
 import psycopg2
 import pandas as pd
 from dbutils.pooled_db import PooledDB
+from sqlalchemy import create_engine
 
 
 def get_post_conn(obj):
@@ -17,6 +18,12 @@ def get_post_conn(obj):
     ))
     return conn
 
+
+def get_post_engine(obj):
+    return create_engine('{}://{}:{}@{}:{}/{}'.format(
+        str(obj['sqlType']).lower(), obj['userName'], obj['password'], obj['host'],
+        obj['port'], obj['database']
+    ))
 
 def pool_post_conn(obj):
     """

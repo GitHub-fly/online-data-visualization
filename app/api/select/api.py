@@ -1,19 +1,15 @@
 import threading
 import time
 
-import psycopg2
 from pandas.io import json
 
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
-from app.utils.databaseUtil import get_post_conn, close_con, paging, pool_post_conn, get_page_size
+from app.utils.databaseUtil import get_post_conn, close_con, paging, pool_post_conn, get_page_size, get_post_engine
 from flask import request
 import pandas as pd
 import os
-
-from queue import Queue
-from .service.selectService import fetchall_data
 
 all_data_list = []
 lock = threading.Lock()
@@ -70,9 +66,7 @@ def select_all_table():
     # 如果数据库类型是PG
     if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 使用psycopg2库连接PG数据库
-        conn = psycopg2.connect(database=str(conn_obj['database']).lower(), user=conn_obj['userName'],
-                                password=conn_obj['password'],
-                                host=conn_obj['host'], port=conn_obj['port'])
+        conn = get_post_conn(conn_obj)
         # 获取游标
         cursor = conn.cursor()
         # 执行sql
@@ -123,10 +117,7 @@ def select_all_column():
 
     if str(conn_obj['sqlType']).lower() == 'postgresql':
         # 连接PG数据库
-        postgres_engine = create_engine('{}://{}:{}@{}:{}/{}'.format(
-            str(conn_obj['sqlType']).lower(), conn_obj['userName'], conn_obj['password'], conn_obj['host'],
-            conn_obj['port'], conn_obj['database']
-        ))
+        postgres_engine = get_post_engine(conn_obj)
         # 执行sql
         data = pd.read_sql(
             "select * from information_schema.columns where table_schema='public' and table_name=%(name)s",
@@ -179,7 +170,7 @@ def select_all_data():
     res = paging(select_obj)
     start = res[0]
     offset = res[1]
-    cur.execute('SELECT * FROM {} LIMIT {} offset {};'.format(select_obj['tableName'], offset, start))
+    cur.execute('SELECT * FROM {} as t LIMIT {} offset {};'.format(select_obj['tableName'], offset, start))
     data = cur.fetchall()
     print(data)
     close_con(conn, cur)
@@ -245,8 +236,8 @@ def filter_data():
     col_all = obj['allColNameList']
     col = obj['colNameList']
     data_all = all_data_list[obj['allDataListIndex']]
-    all_data = pd.DataFrame.from_records(data_all, columns=col_all)
-    data = all_data[col]
+    df = pd.DataFrame.from_records(data_all, columns=col_all)
+    data = df[col]
     # 获取到第一列的类型
     s_dtype = str(data[col[0]].dtype)
     # 判断数值类型
@@ -380,9 +371,7 @@ def get_chart_data():
     """
     start = time.time()
     obj = request.get_json()
-    print(obj)
-    pool = pool_post_conn(obj)
-    conn = pool.connection()
+    conn = get_post_conn(obj)
     cur = conn.cursor()
     sql = 'SELECT '
     if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:

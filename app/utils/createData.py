@@ -1,7 +1,7 @@
 import psycopg2
 
 
-conn = psycopg2.connect(database='airfast', user='postgres', password='root', host='localhost', port=5432)
+conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
 cursor = conn.cursor()
 
 
@@ -55,12 +55,12 @@ def type_reset():
                'leg_qty', 'cls_cpc_qty', 'pax_qty', 'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
     double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
     for i in int_arr:
-        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
+        sql = 'ALTER TABLE test ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
         cursor.execute(sql)
         print(sql)
 
     for i in double_arr:
-        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
+        sql = 'ALTER TABLE test ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
         cursor.execute(sql)
         print(sql)
 
