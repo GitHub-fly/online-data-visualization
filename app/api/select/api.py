@@ -267,6 +267,7 @@ def filter_data():
                     continue
             if 'datetime' in str(data[col[0]].dtype):
                 print('按日期聚合')
+                # 设置日期为当前df对象的索引
                 data = data.set_index(col[0], drop=False)
                 # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
                 target = data.resample('M').agg('sum')
@@ -282,9 +283,6 @@ def filter_data():
                 data_filter_sort.reset_index(inplace=True)
     df_json = data_filter_sort.to_json(orient='records')
     df_json_load = json.loads(df_json)
-    for i in df_json_load:
-        print(i)
-    print('执行时间：', time.time() - start)
     return APIResponse(200, df_json_load).body()
 
 
@@ -397,5 +395,4 @@ def get_chart_data():
 
 @select.route('/test', methods=['POST'])
 def test():
-
     return 'all'
