@@ -232,58 +232,68 @@ def filter_data():
     print('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
-    print(obj)
     col_all = obj['allColNameList']
     col = obj['colNameList']
     data_all = all_data_list[obj['allDataListIndex']]
+    # 将对应表的所有数据转换数据类型为dataFrame型
     df = pd.DataFrame.from_records(data_all, columns=col_all)
+    # 将指定列取出，组成单独的df
     data = df[col]
-    # 获取到第一列的类型
-    s_dtype = str(data[col[0]].dtype)
-    # 判断数值类型
-    # 数值型
-    if ('int' in s_dtype) or ('float' in s_dtype):
-        print('按数值型聚合')
+
+    # 将数值型列和非数值型列分别存放（只存放列名）
+    num_col_list = []
+    not_num_list = []
+    time_list = []
+    # 判断每个列的类型
+    for i in col:
+        # 找出每列第一个非空值
+        ids = data[i].first_valid_index()
+        first_valid_value = data[i][ids]
+        # 判断时间类型预处理
+        pattern = ('%Y/%m/%d', '%Y-%m-%d', '%Y_%m_%d', '%y/%m/%d', '%y-%m-%d')
+        for j in pattern:
+            try:
+                res = time.strptime(first_valid_value, j)
+                if res:
+                    # 将此值obj型转成datetime型
+                    first_valid_value = pd.to_datetime(first_valid_value)
+                    break
+            except:
+                continue
+        # 查看类型
+        value_type = str(type(first_valid_value))
+        if ('int' in value_type) or ('float' in value_type):
+            num_col_list.append(i)
+        elif 'time' in value_type:
+            time_list.append(i)
+        else:
+            not_num_list.append(i)
+    # 根据维度的类型做不同聚合处理
+    if (col[0] in num_col_list) or (col[0] in not_num_list):
+        print('维度为数值型或字符型')
         data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
         data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
         data_filter_sort.reset_index(inplace=True)
+    elif col[0] in time_list:
+        print('维度为时间型')
+        data = data.copy()
+        data[col[0]] = pd.to_datetime(data[col[0]], errors='coerce', infer_datetime_format=True,
+                                      format='%Y-%m-%d')
+        data = data.set_index(col[0], drop=False)
+        # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
+        target = data.resample('M').agg('sum')
+        target.sort_values([col[0]], inplace=True)
+        data_filter_sort = target
+        data_filter_sort.reset_index(inplace=True)
+        data_filter_sort[col[0]] = data_filter_sort[col[0]].astype('string')
     else:
-        # 非数值型
-        # 随机获取1条数据判断类型
-        data_sp = data[col[0]].sample(1)
-        # 如果非nan
-        if data_sp.notna().bool():
-            # 判断日期型
-            # 将字符串尝试转换为这几种常见的日期形式，转换成功则是日期型
-            pattern = ('%Y_%m_%d', '%Y/%m/%d', '%y/%m/%d', '%Y-%m-%d', '%y-%m-%d')
-            for i in pattern:
-                try:
-                    res = time.strptime(data_sp.iat[0], i)
-                    if res:
-                        data = data.copy()
-                        data[col[0]] = pd.to_datetime(data[col[0]], errors='coerce', infer_datetime_format=True,
-                                                      format='%Y-%m-%d')
-                except:
-                    continue
-            if 'datetime' in str(data[col[0]].dtype):
-                print('按日期聚合')
-                # 设置日期为当前df对象的索引
-                data = data.set_index(col[0], drop=False)
-                # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-                target = data.resample('M').agg('sum')
-                target.sort_values([col[0]], inplace=True)
-                data_filter_sort = target
-                data_filter_sort.reset_index(inplace=True)
-                data_filter_sort[col[0]] = data_filter_sort[col[0]].astype('string')
-            else:
-                # 按字符聚合
-                print('按字符聚合')
-                data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
-                data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
-                data_filter_sort.reset_index(inplace=True)
+        print('错误：无法识别维度类型！')
     df_json = data_filter_sort.to_json(orient='records')
-    df_json_load = json.loads(df_json)
-    return APIResponse(200, df_json_load).body()
+    data_json = json.loads(df_json)
+    # for k in data_json:
+    #     print(k)
+    print('执行时间：', time.time() - start)
+    return APIResponse(200, data_json).body()
 
 
 @select.route('/diData', methods=['POST'])
@@ -391,8 +401,3 @@ def get_chart_data():
     lock.release()
     print('执行时间:', end - start)
     return APIResponse(200, {'allDataListIndex': index}).body()
-
-
-@select.route('/test', methods=['POST'])
-def test():
-    return 'all'
