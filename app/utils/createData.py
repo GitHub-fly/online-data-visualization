@@ -50,7 +50,10 @@ def type_reset():
     修改字段类型
     :return:
     """
+<<<<<<< HEAD
 
+=======
+>>>>>>> bc6d8da07301236afdea8e4ece8ec2ac4b04f1d4
     int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_arrv_mm', 'flt_seg_dpt_hh', 'flt_seg_dpt_mm', 'flt_seg_seq_nbr',
                'flt_seg_dstnc', 'leg_qty', 'cls_cpc_qty', 'pax_qty',
                'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
@@ -59,6 +62,7 @@ def type_reset():
         sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
         cursor.execute(sql)
         print(cursor.execute(sql))
+
     for i in double_arr:
         sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
         cursor.execute(sql)
@@ -69,4 +73,22 @@ def type_reset():
 
 
 if __name__ == '__main__':
-    type_reset()
+    # type_reset()
+    sql = """
+        SELECT
+            A.attname AS CO,
+            concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
+        FROM
+            pg_class AS C,
+            pg_attribute AS A,
+            pg_type AS T 
+        WHERE
+            C.relname = 'sample_1k_flts' 
+            AND A.attnum > 0
+            AND A.attrelid = C.oid 
+            AND A.atttypid = T.oid
+    """
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    for item in data:
+        print(item)
