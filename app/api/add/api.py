@@ -1,7 +1,7 @@
 from flask import request
 from app.utils.APIResponse import APIResponse
 from . import add
-from ..select.api import select_all_table_column
+from ..select.api import select_table_column
 import re
 
 
@@ -146,6 +146,7 @@ def final_calc(formula_list):
 @add.route('/addNewColumn', methods=['POST'])
 def add_new_table_column():
     obj = request.get_json()
+    print("clolo", obj)
     column_arr = {'sqlType': obj['sqlType'], 'userName': obj['userName'], 'password': obj['password'],
                   'host': obj['host'],
                   'port': obj['port'], 'database': obj['database'], 'limitCount': obj['limitCount'],
@@ -156,7 +157,8 @@ def add_new_table_column():
     formula = []
     res_list = []
     operate_list = ['+', '-', '*', '/', '(', ')']
-    result_list = select_all_table_column(column_arr)['data']
+    result_list = select_table_column(column_arr)['data']
+    print("数组数据", result_list)
     for item in result_list:
         character = []
         i = 0
@@ -166,13 +168,11 @@ def add_new_table_column():
             else:
                 character.append(item[i])
                 i += 1
-        str = ''.join('%s' %a for a in character)
+        str = ''.join('%s' % a for a in character)
         formula.append(str)
     for formula_list in formula:
-        print('算数式', formula_list)
         formu = formula_format(formula_list)
         result, _ = final_calc(formu)
-        print('结果', result[0])
         res = result[0]
         res_list.append(res)
     print(res_list)

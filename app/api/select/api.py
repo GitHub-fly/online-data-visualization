@@ -41,11 +41,7 @@ def upload_files():
             for i in rows:
                 upload_file['file_list'].append(i.tolist())
         li.append(upload_file)
-    print('数据：')
-    for item in li:
-        for it in item['file_list']:
-            print(it)
-        print('========================================')
+    print(li)
     return APIResponse(200, li).body()
 
 
@@ -247,6 +243,55 @@ def select_all_table_column():
     print(data_loads)
     close_con(conn, cur)
     return APIResponse(200, data_loads).body()
+
+
+@select.route("/selectDataByColumn", methods=["POST"])
+def select_table_column(self):
+    """
+    查询某张表中某个字段的所有数据带分页
+    limitCount：可选项，默认为100条
+    columnName: 当此参数不写或者为 [] 时，默认为所有字段
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "columnName": ["city", "add_ensure"],
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres",
+        "page": 1,
+        "limitCount": 100
+    }
+    :return:
+    """
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cur = conn.cursor()
+    # 获取分页结果
+    res = paging(obj)
+    start = res[0]
+    offset = res[1]
+    sql = 'SELECT'
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + ' *'
+    else:
+        arr = obj['columnName']
+        # 循环拼接字段名
+        for i in arr:
+            sql = (sql + ' {},').format(i)
+        # 删除末尾的 ‘,’
+        sql = sql.strip(',')
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {} LIMIT {} offset {};').format(obj['tableName'], offset, start)
+    print(sql)
+    # 执行 sql
+    cur.execute(sql)
+    data = cur.fetchall()
+    print(data)
+    close_con(conn, cur)
+    return APIResponse(200, data).body()
 
 
 @select.route("/filterData", methods=["POST"])
