@@ -1,3 +1,4 @@
+simplejson
 pandas
 numpy
 sqlalchemy
