@@ -1,47 +1,20 @@
-import threading
 import time
-
-from pandas.io import json
 
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
-from app.utils.databaseUtil import get_post_conn, close_con, paging, pool_post_conn, get_page_size, get_post_engine
+from app.utils.databaseUtil import get_post_conn, close_con, paging, get_post_engine
 from flask import request
 import pandas as pd
-import os
-
-all_data_list = []
-lock = threading.Lock()
+from .service.selectService import read_file_data, get_file_chart_data, get_sql_chart_data, filter_sql
+from app.common.Global import all_data_list
 
 
 @select.route("/uploadFile", methods=["POST"])
 def upload_files():
     files = request.files
     file_list = files.getlist('file')
-    print(file_list)
-    li = []
-    for file in file_list:
-        upload_file = {}
-        if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None)
-            upload_file['name'] = file.filename
-            upload_file['file_list'] = data.values.tolist()
-        else:
-            columns = pd.read_excel(file, keep_default_na=False).columns
-            rows = pd.read_excel(file, keep_default_na=False).values
-            upload_file['name'] = file.filename
-            upload_file['file_list'] = []
-            upload_file['file_list'].append(columns.to_list())
-            for i in rows:
-                upload_file['file_list'].append(i.tolist())
-        li.append(upload_file)
-    print('数据：')
-    for item in li:
-        for it in item['file_list']:
-            print(it)
-        print('========================================')
-    return APIResponse(200, li).body()
+    return APIResponse(200, read_file_data(file_list)).body()
 
 
 @select.route("/allTable", methods=["POST"])
@@ -227,71 +200,61 @@ def select_all_table_column():
     return APIResponse(200, data).body()
 
 
+@select.route("/selectDataByColumn", methods=["POST"])
+def select_table_column(self):
+    """
+    查询某张表中某个字段的所有数据带分页
+    limitCount：可选项，默认为100条
+    columnName: 当此参数不写或者为 [] 时，默认为所有字段
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "columnName": ["city", "add_ensure"],
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres",
+        "page": 1,
+        "limitCount": 100
+    }
+    :return:
+    """
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cur = conn.cursor()
+    # 获取分页结果
+    res = paging(obj)
+    start = res[0]
+    offset = res[1]
+    sql = 'SELECT'
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + ' *'
+    else:
+        arr = obj['columnName']
+        # 循环拼接字段名
+        for i in arr:
+            sql = (sql + ' {},').format(i)
+        # 删除末尾的 ‘,’
+        sql = sql.strip(',')
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {} LIMIT {} offset {};').format(obj['tableName'], offset, start)
+    print(sql)
+    # 执行 sql
+    cur.execute(sql)
+    data = cur.fetchall()
+    print(data)
+    close_con(conn, cur)
+    return APIResponse(200, data).body()
+
+
 @select.route("/filterData", methods=["POST"])
 def filter_data():
     print('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
-    col_all = obj['allColNameList']
-    col = obj['colNameList']
-    data_all = all_data_list[obj['allDataListIndex']]
-    # 将对应表的所有数据转换数据类型为dataFrame型
-    df = pd.DataFrame.from_records(data_all, columns=col_all)
-    # 将指定列取出，组成单独的df
-    data = df[col]
-
-    # 将数值型列和非数值型列分别存放（只存放列名）
-    num_col_list = []
-    not_num_list = []
-    time_list = []
-    # 判断每个列的类型
-    for i in col:
-        # 找出每列第一个非空值
-        ids = data[i].first_valid_index()
-        first_valid_value = data[i][ids]
-        # 判断时间类型预处理
-        pattern = ('%Y/%m/%d', '%Y-%m-%d', '%Y_%m_%d', '%y/%m/%d', '%y-%m-%d')
-        for j in pattern:
-            try:
-                res = time.strptime(first_valid_value, j)
-                if res:
-                    # 将此值obj型转成datetime型
-                    first_valid_value = pd.to_datetime(first_valid_value)
-                    break
-            except:
-                continue
-        # 查看类型
-        value_type = str(type(first_valid_value))
-        if ('int' in value_type) or ('float' in value_type):
-            num_col_list.append(i)
-        elif 'time' in value_type:
-            time_list.append(i)
-        else:
-            not_num_list.append(i)
-    # 根据维度的类型做不同聚合处理
-    if (col[0] in num_col_list) or (col[0] in not_num_list):
-        print('维度为数值型或字符型')
-        data_filter = data.groupby(col[0]).agg('sum', numeric_only=True)
-        data_filter_sort = data_filter.sort_values([col[0]], ascending=True)
-        data_filter_sort.reset_index(inplace=True)
-    elif col[0] in time_list:
-        print('维度为时间型')
-        data = data.copy()
-        data[col[0]] = pd.to_datetime(data[col[0]], errors='coerce', infer_datetime_format=True,
-                                      format='%Y-%m-%d')
-        data = data.set_index(col[0], drop=False)
-        # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-        target = data.resample('M').agg('sum')
-        target.sort_values([col[0]], inplace=True)
-        data_filter_sort = target
-        data_filter_sort.reset_index(inplace=True)
-        data_filter_sort[col[0]] = data_filter_sort[col[0]].astype('string')
-    else:
-        print('错误：无法识别维度类型！')
-    df_json = data_filter_sort.to_json(orient='records')
-    data_json = json.loads(df_json)
-    # for k in data_json:
-    #     print(k)
+    data_json = filter_sql(obj)
     print('执行时间：', time.time() - start)
     return APIResponse(200, data_json).body()
 
@@ -361,8 +324,10 @@ def get_dimensionality_indicator():
 
 @select.route('/getChartData', methods=['POST'])
 def get_chart_data():
+    start = time.time()
     """
-    查询某张表中某个字段的所有数据
+    图表数据初始化接口
+    参数：数据库连接对象的基本信息   或者   一个文件对象
     columnName: 指定字段数据
     其它属性为必选项
     {
@@ -375,29 +340,14 @@ def get_chart_data():
         "port": "5432",
         "database": "postgres"
     }
-    :return:
+    :return: 全局数据列表的索引值
     """
-    start = time.time()
     obj = request.get_json()
-    conn = get_post_conn(obj)
-    cur = conn.cursor()
-    sql = 'SELECT '
-    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
-        sql = sql + '*'
+    if obj is None:
+        files = request.files
+        index = get_file_chart_data(files)
     else:
-        sql = sql + ', '.join(obj['columnName'])
-    # 拼接表名和分页查询的参数
-    sql = (sql + ' FROM {};').format(obj['tableName'])
-    cur.execute(sql)
-    data = cur.fetchall()
-    cur.close()
-    conn.close()
+        index = get_sql_chart_data(obj)
     end = time.time()
-    # 上锁开始在全局数组内追加数据
-    lock.acquire()
-    global all_data_list
-    index = len(all_data_list)
-    all_data_list.append(data)
-    lock.release()
     print('执行时间:', end - start)
     return APIResponse(200, {'allDataListIndex': index}).body()
