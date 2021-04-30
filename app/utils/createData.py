@@ -53,6 +53,7 @@ def type_reset():
     """
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> bc6d8da07301236afdea8e4ece8ec2ac4b04f1d4
@@ -65,6 +66,12 @@ def type_reset():
                'leg_qty', 'cls_cpc_qty', 'pax_qty', 'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
     double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
 >>>>>>> 6c5441053088de04f0584ac98dffc9924fa26914
+=======
+    int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_dpt_hh', 'flt_seg_seq_nbr', 'flt_seg_dpt_mm', 'flt_seg_arrv_mm',
+               'leg_qty', 'cls_cpc_qty', 'pax_qty', 'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
+    double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
+
+>>>>>>> 524490394e5772d8d531115e1319444ab3f1ce35
     for i in int_arr:
         sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
         cursor.execute(sql)

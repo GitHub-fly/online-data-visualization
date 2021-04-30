@@ -1,8 +1,12 @@
+from decimal import *
 import threading
 import time
+from datetime import datetime
 
 import psycopg2
 from pandas.io import json
+import json
+import simplejson as spjson
 
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
@@ -11,9 +15,6 @@ from app.utils.databaseUtil import get_post_conn, close_con, paging, pool_post_c
 from flask import request
 import pandas as pd
 import os
-
-from queue import Queue
-from .service.selectService import fetchall_data
 
 all_data_list = []
 lock = threading.Lock()
@@ -95,8 +96,7 @@ def select_all_table():
         table_name_all = df['TABLE_NAME'].tolist()
 
         # table_name_all = [{id: 0, name: 'db_mysql',isSelect: false}]
-    print("所有表名的查询结果：")
-    print(table_name_all)
+    print("所有表名的查询结果：", table_name_all)
     return APIResponse(200, table_name_all).body()
 
 
@@ -142,8 +142,7 @@ def select_all_column():
         # 执行sql，得到查询结果
         df = pd.read_sql(sql_str, mysql_engine)
         column_all = df['COLUMN_NAME'].tolist()
-    print("所有字段的查询结果：")
-    print(column_all)
+    print("所有字段的查询结果：", column_all)
     return APIResponse(200, column_all).body()
 
 
@@ -227,9 +226,23 @@ def select_all_table_column():
     # 执行 sql
     cur.execute(sql)
     data = cur.fetchall()
-    print(data)
+
+    # 重写JSONEncoder，使它可以将decimal转化为float等类型转换...
+    class Encoder(json.JSONEncoder):
+        def default(self, obj_param):
+            if isinstance(obj_param, Decimal):
+                return float(obj_param)
+            elif isinstance(obj_param, datetime.datetime):
+                return obj.strftime('%Y-%m-%d %H:%M:%S')
+            elif isinstance(obj_param, datetime.date):
+                return obj_param.strftime("%Y-%m-%d")
+            else:
+                return json.JSONEncoder.default(self, obj_param)
+    data_json = json.dumps(data, cls=Encoder)
+    data_loads = json.loads(data_json)
+    print(data_loads)
     close_con(conn, cur)
-    return APIResponse(200, data).body()
+    return APIResponse(200, data_loads).body()
 
 
 @select.route("/selectDataByColumn", methods=["POST"])
@@ -283,6 +296,14 @@ def select_table_column(self):
 
 @select.route("/filterData", methods=["POST"])
 def filter_data():
+    """
+    {
+    "allDataListIndex": 0,
+    "allColNameList": ["cls_cd", "dpt_cty_cd", "arrv_cty_cd", "arrv_airpt_cd", "dpt_airpt_cd", "flt_nbr", "sub_cls_cd","flt_seg_dpt_mm", "flt_seg_dpt_hh", "day_id"],
+    "colNameList": [ "dpt_cty_cd", "flt_seg_dpt_hh", "day_id", "flt_seg_dpt_mm"]
+}
+    :return:
+    """
     print('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
@@ -343,7 +364,7 @@ def filter_data():
     else:
         print('错误：无法识别维度类型！')
     df_json = data_filter_sort.to_json(orient='records')
-    data_json = json.loads(df_json)
+    data_json = spjson.loads(df_json)
     # for k in data_json:
     #     print(k)
     print('执行时间：', time.time() - start)
@@ -411,6 +432,7 @@ def get_dimensionality_indicator():
         'indicator': indicator
     }
     return APIResponse(200, data).body()
+
 
 
 @select.route('/getChartData', methods=['POST'])
@@ -525,3 +547,4 @@ def get_chart_data():
 #         print(k)
 #     print('执行时间：', time.time() - start)
 #     return APIResponse(200, data_json).body()
+
