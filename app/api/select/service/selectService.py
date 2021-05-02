@@ -1,10 +1,9 @@
 import time
+import os
+import pandas as pd
 
 from app.utils.databaseUtil import close_con, get_post_conn
-import pandas as pd
-import os
 from pandas.io import json
-
 from app.common.Global import all_data_list, lock
 
 
@@ -44,7 +43,7 @@ def read_file_data(file_list: list):
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None)
+            data = pd.read_csv(file, keep_default_na=False)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
         else:
@@ -99,7 +98,7 @@ def get_file_chart_data(files):
     # 上锁开始在全局数组内追加数据
     lock.acquire()
     index = len(all_data_list)
-    all_data_list.append(column_data[1:])
+    all_data_list.append(column_data)
     lock.release()
     return index
 
@@ -113,7 +112,6 @@ def filter_sql(obj):
     col_all = obj['allColNameList']
     col = obj['colNameList']
     data_all = all_data_list[obj['allDataListIndex']]
-    print(data_all)
     # 将对应表的所有数据转换数据类型为dataFrame型
     df = pd.DataFrame.from_records(data_all, columns=col_all)
     # 将指定列取出，组成单独的df
@@ -160,7 +158,7 @@ def filter_sql(obj):
                                       format='%Y-%m-%d')
         data = data.set_index(col[0], drop=False)
         # 以年、月、周为单位，聚合数据，并做简单计算：max、min、mean...
-        target = data.resample('M').agg('sum')
+        target = data.resample('D').agg('sum')
         target.sort_values([col[0]], inplace=True)
         data_filter_sort = target
         data_filter_sort.reset_index(inplace=True)

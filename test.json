@@ -1,0 +1,738 @@
+{
+  "code": 200,
+  "data": [
+    {
+      "day_id": "2012-05-01",
+      "flt_seg_arrv_hh": 650
+    },
+    {
+      "day_id": "2012-05-02",
+      "flt_seg_arrv_hh": 2500
+    },
+    {
+      "day_id": "2012-05-03",
+      "flt_seg_arrv_hh": 3225
+    },
+    {
+      "day_id": "2012-05-04",
+      "flt_seg_arrv_hh": 1930
+    },
+    {
+      "day_id": "2012-05-05",
+      "flt_seg_arrv_hh": 1570
+    },
+    {
+      "day_id": "2012-05-06",
+      "flt_seg_arrv_hh": 2685
+    },
+    {
+      "day_id": "2012-05-07",
+      "flt_seg_arrv_hh": 1355
+    },
+    {
+      "day_id": "2012-05-08",
+      "flt_seg_arrv_hh": 0
+    },
+    {
+      "day_id": "2012-05-09",
+      "flt_seg_arrv_hh": 2245
+    },
+    {
+      "day_id": "2012-05-10",
+      "flt_seg_arrv_hh": 2530
+    },
+    {
+      "day_id": "2012-05-11",
+      "flt_seg_arrv_hh": 1425
+    },
+    {
+      "day_id": "2012-05-12",
+      "flt_seg_arrv_hh": 1885
+    },
+    {
+      "day_id": "2012-05-13",
+      "flt_seg_arrv_hh": 3825
+    },
+    {
+      "day_id": "2012-05-14",
+      "flt_seg_arrv_hh": 1978
+    },
+    {
+      "day_id": "2012-05-15",
+      "flt_seg_arrv_hh": 2100
+    },
+    {
+      "day_id": "2012-05-16",
+      "flt_seg_arrv_hh": 1320
+    },
+    {
+      "day_id": "2012-05-17",
+      "flt_seg_arrv_hh": 2225
+    },
+    {
+      "day_id": "2012-05-18",
+      "flt_seg_arrv_hh": 1295
+    },
+    {
+      "day_id": "2012-05-19",
+      "flt_seg_arrv_hh": 420
+    },
+    {
+      "day_id": "2012-05-20",
+      "flt_seg_arrv_hh": 1220
+    },
+    {
+      "day_id": "2012-05-21",
+      "flt_seg_arrv_hh": 2585
+    },
+    {
+      "day_id": "2012-05-22",
+      "flt_seg_arrv_hh": 6100
+    },
+    {
+      "day_id": "2012-05-23",
+      "flt_seg_arrv_hh": 1110
+    },
+    {
+      "day_id": "2012-05-24",
+      "flt_seg_arrv_hh": 850
+    },
+    {
+      "day_id": "2012-05-25",
+      "flt_seg_arrv_hh": 1350
+    },
+    {
+      "day_id": "2012-05-26",
+      "flt_seg_arrv_hh": 840
+    },
+    {
+      "day_id": "2012-05-27",
+      "flt_seg_arrv_hh": 2070
+    },
+    {
+      "day_id": "2012-05-28",
+      "flt_seg_arrv_hh": 270
+    },
+    {
+      "day_id": "2012-05-29",
+      "flt_seg_arrv_hh": 225
+    },
+    {
+      "day_id": "2012-05-30",
+      "flt_seg_arrv_hh": 1245
+    },
+    {
+      "day_id": "2012-05-31",
+      "flt_seg_arrv_hh": 1045
+    },
+    {
+      "day_id": "2012-06-01",
+      "flt_seg_arrv_hh": 0
+    },
+    {
+      "day_id": "2012-06-02",
+      "flt_seg_arrv_hh": 1005
+    },
+    {
+      "day_id": "2012-06-03",
+      "flt_seg_arrv_hh": 340
+    },
+    {
+      "day_id": "2012-06-04",
+      "flt_seg_arrv_hh": 250
+    },
+    {
+      "day_id": "2012-06-05",
+      "flt_seg_arrv_hh": 1430
+    },
+    {
+      "day_id": "2012-06-06",
+      "flt_seg_arrv_hh": 200
+    },
+    {
+      "day_id": "2012-06-07",
+      "flt_seg_arrv_hh": 665
+    },
+    {
+      "day_id": "2012-06-08",
+      "flt_seg_arrv_hh": 200
+    },
+    {
+      "day_id": "2012-06-09",
+      "flt_seg_arrv_hh": 2215
+    },
+    {
+      "day_id": "2012-06-10",
+      "flt_seg_arrv_hh": 2675
+    },
+    {
+      "day_id": "2012-06-11",
+      "flt_seg_arrv_hh": 2330
+    },
+    {
+      "day_id": "2012-06-12",
+      "flt_seg_arrv_hh": 765
+    },
+    {
+      "day_id": "2012-06-13",
+      "flt_seg_arrv_hh": 1250
+    },
+    {
+      "day_id": "2012-06-14",
+      "flt_seg_arrv_hh": 2295
+    },
+    {
+      "day_id": "2012-06-15",
+      "flt_seg_arrv_hh": 1340
+    },
+    {
+      "day_id": "2012-06-16",
+      "flt_seg_arrv_hh": 3905
+    },
+    {
+      "day_id": "2012-06-17",
+      "flt_seg_arrv_hh": 935
+    },
+    {
+      "day_id": "2012-06-18",
+      "flt_seg_arrv_hh": 860
+    },
+    {
+      "day_id": "2012-06-19",
+      "flt_seg_arrv_hh": 1270
+    },
+    {
+      "day_id": "2012-06-20",
+      "flt_seg_arrv_hh": 1660
+    },
+    {
+      "day_id": "2012-06-21",
+      "flt_seg_arrv_hh": 3435
+    },
+    {
+      "day_id": "2012-06-22",
+      "flt_seg_arrv_hh": 1375
+    },
+    {
+      "day_id": "2012-06-23",
+      "flt_seg_arrv_hh": 700
+    },
+    {
+      "day_id": "2012-06-24",
+      "flt_seg_arrv_hh": 1290
+    },
+    {
+      "day_id": "2012-06-25",
+      "flt_seg_arrv_hh": 2740
+    },
+    {
+      "day_id": "2012-06-26",
+      "flt_seg_arrv_hh": 280
+    },
+    {
+      "day_id": "2012-06-27",
+      "flt_seg_arrv_hh": 760
+    },
+    {
+      "day_id": "2012-06-28",
+      "flt_seg_arrv_hh": 165
+    },
+    {
+      "day_id": "2012-06-29",
+      "flt_seg_arrv_hh": 1450
+    },
+    {
+      "day_id": "2012-06-30",
+      "flt_seg_arrv_hh": 40
+    },
+    {
+      "day_id": "2012-07-01",
+      "flt_seg_arrv_hh": 2725
+    },
+    {
+      "day_id": "2012-07-02",
+      "flt_seg_arrv_hh": 2075
+    },
+    {
+      "day_id": "2012-07-03",
+      "flt_seg_arrv_hh": 548
+    },
+    {
+      "day_id": "2012-07-04",
+      "flt_seg_arrv_hh": 2285
+    },
+    {
+      "day_id": "2012-07-05",
+      "flt_seg_arrv_hh": 2755
+    },
+    {
+      "day_id": "2012-07-06",
+      "flt_seg_arrv_hh": 1525
+    },
+    {
+      "day_id": "2012-07-07",
+      "flt_seg_arrv_hh": 2320
+    },
+    {
+      "day_id": "2012-07-08",
+      "flt_seg_arrv_hh": 90
+    },
+    {
+      "day_id": "2012-07-09",
+      "flt_seg_arrv_hh": 2205
+    },
+    {
+      "day_id": "2012-07-10",
+      "flt_seg_arrv_hh": 2180
+    },
+    {
+      "day_id": "2012-07-11",
+      "flt_seg_arrv_hh": 3670
+    },
+    {
+      "day_id": "2012-07-12",
+      "flt_seg_arrv_hh": 1015
+    },
+    {
+      "day_id": "2012-07-13",
+      "flt_seg_arrv_hh": 2870
+    },
+    {
+      "day_id": "2012-07-14",
+      "flt_seg_arrv_hh": 545
+    },
+    {
+      "day_id": "2012-07-15",
+      "flt_seg_arrv_hh": 1080
+    },
+    {
+      "day_id": "2012-07-16",
+      "flt_seg_arrv_hh": 485
+    },
+    {
+      "day_id": "2012-07-17",
+      "flt_seg_arrv_hh": 885
+    },
+    {
+      "day_id": "2012-07-18",
+      "flt_seg_arrv_hh": 765
+    },
+    {
+      "day_id": "2012-07-19",
+      "flt_seg_arrv_hh": 1830
+    },
+    {
+      "day_id": "2012-07-20",
+      "flt_seg_arrv_hh": 2240
+    },
+    {
+      "day_id": "2012-07-21",
+      "flt_seg_arrv_hh": 525
+    },
+    {
+      "day_id": "2012-07-22",
+      "flt_seg_arrv_hh": 375
+    },
+    {
+      "day_id": "2012-07-23",
+      "flt_seg_arrv_hh": 45
+    },
+    {
+      "day_id": "2012-07-24",
+      "flt_seg_arrv_hh": 135
+    },
+    {
+      "day_id": "2012-07-25",
+      "flt_seg_arrv_hh": 360
+    },
+    {
+      "day_id": "2012-07-26",
+      "flt_seg_arrv_hh": 1305
+    },
+    {
+      "day_id": "2012-07-27",
+      "flt_seg_arrv_hh": 990
+    },
+    {
+      "day_id": "2012-07-28",
+      "flt_seg_arrv_hh": 525
+    },
+    {
+      "day_id": "2012-07-29",
+      "flt_seg_arrv_hh": 1935
+    },
+    {
+      "day_id": "2012-07-30",
+      "flt_seg_arrv_hh": 2305
+    },
+    {
+      "day_id": "2012-07-31",
+      "flt_seg_arrv_hh": 1540
+    },
+    {
+      "day_id": "2012-08-01",
+      "flt_seg_arrv_hh": 100
+    },
+    {
+      "day_id": "2012-08-02",
+      "flt_seg_arrv_hh": 2775
+    },
+    {
+      "day_id": "2012-08-03",
+      "flt_seg_arrv_hh": 2320
+    },
+    {
+      "day_id": "2012-08-04",
+      "flt_seg_arrv_hh": 3750
+    },
+    {
+      "day_id": "2012-08-05",
+      "flt_seg_arrv_hh": 1195
+    },
+    {
+      "day_id": "2012-08-06",
+      "flt_seg_arrv_hh": 2255
+    },
+    {
+      "day_id": "2012-08-07",
+      "flt_seg_arrv_hh": 1125
+    },
+    {
+      "day_id": "2012-08-08",
+      "flt_seg_arrv_hh": 1085
+    },
+    {
+      "day_id": "2012-08-09",
+      "flt_seg_arrv_hh": 2395
+    },
+    {
+      "day_id": "2012-08-10",
+      "flt_seg_arrv_hh": 935
+    },
+    {
+      "day_id": "2012-08-11",
+      "flt_seg_arrv_hh": 2140
+    },
+    {
+      "day_id": "2012-08-12",
+      "flt_seg_arrv_hh": 170
+    },
+    {
+      "day_id": "2012-08-13",
+      "flt_seg_arrv_hh": 2650
+    },
+    {
+      "day_id": "2012-08-14",
+      "flt_seg_arrv_hh": 2515
+    },
+    {
+      "day_id": "2012-08-15",
+      "flt_seg_arrv_hh": 4215
+    },
+    {
+      "day_id": "2012-08-16",
+      "flt_seg_arrv_hh": 2470
+    },
+    {
+      "day_id": "2012-08-17",
+      "flt_seg_arrv_hh": 2135
+    },
+    {
+      "day_id": "2012-08-18",
+      "flt_seg_arrv_hh": 440
+    },
+    {
+      "day_id": "2012-08-19",
+      "flt_seg_arrv_hh": 2220
+    },
+    {
+      "day_id": "2012-08-20",
+      "flt_seg_arrv_hh": 1780
+    },
+    {
+      "day_id": "2012-08-21",
+      "flt_seg_arrv_hh": 548
+    },
+    {
+      "day_id": "2012-08-22",
+      "flt_seg_arrv_hh": 1010
+    },
+    {
+      "day_id": "2012-08-23",
+      "flt_seg_arrv_hh": 860
+    },
+    {
+      "day_id": "2012-08-24",
+      "flt_seg_arrv_hh": 110
+    },
+    {
+      "day_id": "2012-08-25",
+      "flt_seg_arrv_hh": 940
+    },
+    {
+      "day_id": "2012-08-26",
+      "flt_seg_arrv_hh": 3260
+    },
+    {
+      "day_id": "2012-08-27",
+      "flt_seg_arrv_hh": 840
+    },
+    {
+      "day_id": "2012-08-28",
+      "flt_seg_arrv_hh": 1910
+    },
+    {
+      "day_id": "2012-08-29",
+      "flt_seg_arrv_hh": 920
+    },
+    {
+      "day_id": "2012-08-30",
+      "flt_seg_arrv_hh": 90
+    },
+    {
+      "day_id": "2012-08-31",
+      "flt_seg_arrv_hh": 740
+    },
+    {
+      "day_id": "2012-09-01",
+      "flt_seg_arrv_hh": 2615
+    },
+    {
+      "day_id": "2012-09-02",
+      "flt_seg_arrv_hh": 1585
+    },
+    {
+      "day_id": "2012-09-03",
+      "flt_seg_arrv_hh": 1875
+    },
+    {
+      "day_id": "2012-09-04",
+      "flt_seg_arrv_hh": 1605
+    },
+    {
+      "day_id": "2012-09-05",
+      "flt_seg_arrv_hh": 1315
+    },
+    {
+      "day_id": "2012-09-06",
+      "flt_seg_arrv_hh": 4570
+    },
+    {
+      "day_id": "2012-09-07",
+      "flt_seg_arrv_hh": 1655
+    },
+    {
+      "day_id": "2012-09-08",
+      "flt_seg_arrv_hh": 1450
+    },
+    {
+      "day_id": "2012-09-09",
+      "flt_seg_arrv_hh": 1485
+    },
+    {
+      "day_id": "2012-09-10",
+      "flt_seg_arrv_hh": 395
+    },
+    {
+      "day_id": "2012-09-11",
+      "flt_seg_arrv_hh": 2735
+    },
+    {
+      "day_id": "2012-09-12",
+      "flt_seg_arrv_hh": 10
+    },
+    {
+      "day_id": "2012-09-13",
+      "flt_seg_arrv_hh": 1487
+    },
+    {
+      "day_id": "2012-09-14",
+      "flt_seg_arrv_hh": 700
+    },
+    {
+      "day_id": "2012-09-15",
+      "flt_seg_arrv_hh": 2045
+    },
+    {
+      "day_id": "2012-09-16",
+      "flt_seg_arrv_hh": 1995
+    },
+    {
+      "day_id": "2012-09-17",
+      "flt_seg_arrv_hh": 2145
+    },
+    {
+      "day_id": "2012-09-18",
+      "flt_seg_arrv_hh": 1630
+    },
+    {
+      "day_id": "2012-09-19",
+      "flt_seg_arrv_hh": 1560
+    },
+    {
+      "day_id": "2012-09-20",
+      "flt_seg_arrv_hh": 2145
+    },
+    {
+      "day_id": "2012-09-21",
+      "flt_seg_arrv_hh": 460
+    },
+    {
+      "day_id": "2012-09-22",
+      "flt_seg_arrv_hh": 2330
+    },
+    {
+      "day_id": "2012-09-23",
+      "flt_seg_arrv_hh": 1345
+    },
+    {
+      "day_id": "2012-09-24",
+      "flt_seg_arrv_hh": 1560
+    },
+    {
+      "day_id": "2012-09-25",
+      "flt_seg_arrv_hh": 730
+    },
+    {
+      "day_id": "2012-09-26",
+      "flt_seg_arrv_hh": 315
+    },
+    {
+      "day_id": "2012-09-27",
+      "flt_seg_arrv_hh": 0
+    },
+    {
+      "day_id": "2012-09-28",
+      "flt_seg_arrv_hh": 970
+    },
+    {
+      "day_id": "2012-09-29",
+      "flt_seg_arrv_hh": 935
+    },
+    {
+      "day_id": "2012-09-30",
+      "flt_seg_arrv_hh": 380
+    },
+    {
+      "day_id": "2012-10-01",
+      "flt_seg_arrv_hh": 2595
+    },
+    {
+      "day_id": "2012-10-02",
+      "flt_seg_arrv_hh": 1720
+    },
+    {
+      "day_id": "2012-10-03",
+      "flt_seg_arrv_hh": 2710
+    },
+    {
+      "day_id": "2012-10-04",
+      "flt_seg_arrv_hh": 220
+    },
+    {
+      "day_id": "2012-10-05",
+      "flt_seg_arrv_hh": 1470
+    },
+    {
+      "day_id": "2012-10-06",
+      "flt_seg_arrv_hh": 1995
+    },
+    {
+      "day_id": "2012-10-07",
+      "flt_seg_arrv_hh": 975
+    },
+    {
+      "day_id": "2012-10-08",
+      "flt_seg_arrv_hh": 370
+    },
+    {
+      "day_id": "2012-10-09",
+      "flt_seg_arrv_hh": 1085
+    },
+    {
+      "day_id": "2012-10-10",
+      "flt_seg_arrv_hh": 765
+    },
+    {
+      "day_id": "2012-10-11",
+      "flt_seg_arrv_hh": 3000
+    },
+    {
+      "day_id": "2012-10-12",
+      "flt_seg_arrv_hh": 2080
+    },
+    {
+      "day_id": "2012-10-13",
+      "flt_seg_arrv_hh": 1560
+    },
+    {
+      "day_id": "2012-10-14",
+      "flt_seg_arrv_hh": 2310
+    },
+    {
+      "day_id": "2012-10-15",
+      "flt_seg_arrv_hh": 2490
+    },
+    {
+      "day_id": "2012-10-16",
+      "flt_seg_arrv_hh": 2520
+    },
+    {
+      "day_id": "2012-10-17",
+      "flt_seg_arrv_hh": 1140
+    },
+    {
+      "day_id": "2012-10-18",
+      "flt_seg_arrv_hh": 2540
+    },
+    {
+      "day_id": "2012-10-19",
+      "flt_seg_arrv_hh": 3600
+    },
+    {
+      "day_id": "2012-10-20",
+      "flt_seg_arrv_hh": 2615
+    },
+    {
+      "day_id": "2012-10-21",
+      "flt_seg_arrv_hh": 370
+    },
+    {
+      "day_id": "2012-10-22",
+      "flt_seg_arrv_hh": 2239
+    },
+    {
+      "day_id": "2012-10-23",
+      "flt_seg_arrv_hh": 170
+    },
+    {
+      "day_id": "2012-10-24",
+      "flt_seg_arrv_hh": 800
+    },
+    {
+      "day_id": "2012-10-25",
+      "flt_seg_arrv_hh": 4565
+    },
+    {
+      "day_id": "2012-10-26",
+      "flt_seg_arrv_hh": 2040
+    },
+    {
+      "day_id": "2012-10-27",
+      "flt_seg_arrv_hh": 775
+    },
+    {
+      "day_id": "2012-10-28",
+      "flt_seg_arrv_hh": 660
+    },
+    {
+      "day_id": "2012-10-29",
+      "flt_seg_arrv_hh": 1770
+    },
+    {
+      "day_id": "2012-10-30",
+      "flt_seg_arrv_hh": 630
+    }
+  ],
+  "msg": "Success"
+}

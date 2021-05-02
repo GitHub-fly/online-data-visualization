@@ -1,13 +1,16 @@
 import time
+import pandas as pd
 
+from pandas.io import json
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
 from app.utils.databaseUtil import get_post_conn, close_con, paging, get_post_engine
 from flask import request
-import pandas as pd
-from .service.selectService import read_file_data, get_file_chart_data, get_sql_chart_data, filter_sql
-from app.common.Global import all_data_list
+from .service.selectService import read_file_data, get_file_chart_data, get_sql_chart_data
+from ...common.EnumList import FunType
+from ...common.Global import all_data_list
+from ...utils.dataUtil import switch_time
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -254,9 +257,29 @@ def filter_data():
     print('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
-    data_json = filter_sql(obj)
+    col_all = obj['allColNameList']
+    col = obj['colNameList']
+    data_all = all_data_list[obj['allDataListIndex']]
+    # 将对应表的所有数据转换数据类型为 dataFrame 型
+    all_df = pd.DataFrame.from_records(data_all, columns=col_all)
+    # 将指定列取出，组成单独的 df
+    data_df = all_df[col]
+    # 如果 x 轴上的数据为时间类型，则将其进行转换 ---> pandas 中的 timestamp 类型
+    if switch_time(data_df[col[0]][0]):
+        # 此处必须用 copy() 操作，不然会出现警告提示
+        data_df = data_df.copy()
+        # 将 x 轴上的数据改为 pandas 中的 time 类型
+        data_df[col[0]] = pd.to_datetime(data_df[col[0]], errors='coerce', infer_datetime_format=True,
+                                         format='%Y-%m-%d')
+    # 如果不是时间类型，则继续进行分组运算
+    grouped = data_df.groupby(by=col[0])
+    res_pd_data = grouped.agg(FunType[obj['funType']].value)
+    res_pd_data.reset_index(inplace=True)
+    res_pd_data[col[0]] = res_pd_data[col[0]].astype('string')
+    res_json_data = res_pd_data.to_json(orient='records')
+    res_data = json.loads(res_json_data)
     print('执行时间：', time.time() - start)
-    return APIResponse(200, data_json).body()
+    return APIResponse(200, res_data).body()
 
 
 @select.route('/diData', methods=['POST'])
