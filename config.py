@@ -19,8 +19,7 @@ class Config:
 class DevelopmentConfig(Config):
     """开发模式的配置信息"""
     SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:123321@localhost:5433/postgres'
-    # SESSION_REDIS = redis.Redis(host='127.0.0.1', port=6379, password="root", db=2)  # 操作的redis配置
-    SESSION_REDIS = redis.Redis(host='127.0.0.1', port=6379, db=2)  # 操作的redis配置
+    SESSION_REDIS = redis.Redis(host='127.0.0.1', port=6379, password="root", db=2)  # 操作的redis配置
     DEBUG = True
 
 
@@ -28,7 +27,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """生产环境配置信息"""
     SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:123321@localhost:5433/postgres'
-    SESSION_REDIS = redis.Redis(host='xxx.com', port=6379, password="root", db=3)  # 操作的redis配置
+    # SESSION_REDIS = redis.Redis(host='xxx.com', port=6379, password="root", db=3)  # 操作的redis配置
 
 
 config_map = {

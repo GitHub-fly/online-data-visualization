@@ -2,6 +2,8 @@
     初始化 app、db
     注册蓝图
 """
+import logging
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -31,7 +33,21 @@ def create_app(dev_name):
     CORS(app, resources=r'/*')
     config_class = config_map.get(dev_name)
     app.config.from_object(config_class)  # 从类中读取需要的信息
+    # ========================整合 redis========================
+    app.config['REDIS_HOST'] = "127.0.0.1"  # redis数据库地址
+    app.config['REDIS_PORT'] = 6379  # redis 端口号
+    app.config['REDIS_DB'] = 0  # 数据库名
+    app.config['REDIS_EXPIRE'] = 60  # redis 过期时间60秒
     app.config['JSON_AS_ASCII'] = False
+
+    # ========================整合日志========================
+    # 日志系统配置
+    handler = logging.FileHandler('log', encoding='UTF-8')
+    # 设置日志文件、字符编码
+    logging_format = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    handler.setFormatter(logging_format)
+    app.logger.addHandler(handler)
     db.init_app(app)  # 实例化的数据库配置信息
 
     # 注册蓝图

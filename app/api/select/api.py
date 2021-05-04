@@ -10,7 +10,9 @@ from flask import request
 from .service.selectService import read_file_data, get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
 from ...common.Global import all_data_list
+from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
+from flask import current_app as app
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -254,6 +256,7 @@ def select_table_column(self):
 
 @select.route("/filterData", methods=["POST"])
 def filter_data():
+    print(Redis.read('test'))
     print('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
@@ -271,11 +274,25 @@ def filter_data():
         # 将 x 轴上的数据改为 pandas 中的 time 类型
         data_df[col[0]] = pd.to_datetime(data_df[col[0]], errors='coerce', infer_datetime_format=True,
                                          format='%Y-%m-%d')
-    # 如果不是时间类型，则继续进行分组运算
-    grouped = data_df.groupby(by=col[0])
-    res_pd_data = grouped.agg(FunType[obj['funType']].value)
-    res_pd_data.reset_index(inplace=True)
-    res_pd_data[col[0]] = res_pd_data[col[0]].astype('string')
+        data_df = data_df.set_index(col[0], drop=False)
+        target = data_df.resample('M').agg(FunType[obj['funType']].value)
+        if FunType[obj['funType']].value == 'max' or FunType[obj['funType']].value == 'min':
+            target.index.name = None
+        target.sort_values([col[0]], inplace=True)
+        res_pd_data = target
+        if FunType[obj['funType']].value == 'max' or FunType[obj['funType']].value == 'min':
+            res_pd_data.reset_index(inplace=False)
+        else:
+            res_pd_data.reset_index(inplace=True)
+        res_pd_data[col[0]] = res_pd_data[col[0]].astype('string')
+    else:
+        # 如果不是时间类型，则继续进行分组运算
+        grouped = data_df.groupby(by=col[0])
+        res_pd_data = grouped.agg(FunType[obj['funType']].value)
+        res_pd_data.reset_index(inplace=True)
+
+    # 设置别名
+    res_pd_data.columns = obj['aliasList']
     res_json_data = res_pd_data.to_json(orient='records')
     res_data = json.loads(res_json_data)
     print('执行时间：', time.time() - start)
@@ -347,6 +364,7 @@ def get_dimensionality_indicator():
 
 @select.route('/getChartData', methods=['POST'])
 def get_chart_data():
+    Redis.write("test", "测试Redis", 120)
     start = time.time()
     """
     图表数据初始化接口
@@ -373,4 +391,5 @@ def get_chart_data():
         index = get_sql_chart_data(obj)
     end = time.time()
     print('执行时间:', end - start)
+    app.logger.info('图表数据初始化接口的执行时间为:' + str((end - start)))
     return APIResponse(200, {'allDataListIndex': index}).body()
