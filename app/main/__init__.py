@@ -42,7 +42,7 @@ def create_app(dev_name):
 
     # ========================整合日志========================
     # 日志系统配置
-    handler = logging.FileHandler('log', encoding='UTF-8')
+    handler = logging.FileHandler('log.log', encoding='UTF-8')
     # 设置日志文件、字符编码
     logging_format = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
