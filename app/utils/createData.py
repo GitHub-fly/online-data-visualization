@@ -54,7 +54,6 @@ def type_reset():
     int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_dpt_hh', 'flt_seg_seq_nbr', 'flt_seg_dpt_mm', 'flt_seg_arrv_mm',
                'leg_qty', 'cls_cpc_qty', 'pax_qty', 'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
     double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
-
     for i in int_arr:
         sql = 'ALTER TABLE test ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
         cursor.execute(sql)
@@ -71,21 +70,3 @@ def type_reset():
 
 if __name__ == '__main__':
     type_reset()
-    # sql = """
-    #     SELECT
-    #         A.attname AS CO,
-    #         concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
-    #     FROM
-    #         pg_class AS C,
-    #         pg_attribute AS A,
-    #         pg_type AS T
-    #     WHERE
-    #         C.relname = 'sample_1k_flts'
-    #         AND A.attnum > 0
-    #         AND A.attrelid = C.oid
-    #         AND A.atttypid = T.oid
-    # """
-    # cursor.execute(sql)
-    # data = cursor.fetchall()
-    # for item in data:
-    #     print(item)

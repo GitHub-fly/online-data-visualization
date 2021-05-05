@@ -1,30 +1,49 @@
-from decimal import *
-import threading
 import time
-from datetime import datetime
-
-from pandas.io import json
+import pandas as pd
+import os
 import json
 
+from decimal import *
+from pandas.io import json
+from datetime import datetime
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
 from sqlalchemy import create_engine
 from app.utils.databaseUtil import get_post_conn, close_con, paging, get_post_engine
 from flask import request
-from .service.selectService import read_file_data, get_file_chart_data, get_sql_chart_data
+from .service.selectService import get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
 from ...common.Global import all_data_list
 from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
 from flask import current_app as app
-import pandas as pd
 
 
 @select.route("/uploadFile", methods=["POST"])
 def upload_files():
     files = request.files
+    form = request.form
     file_list = files.getlist('file')
-    return APIResponse(200, read_file_data(file_list)).body()
+    file_getReadLine = int(form.get('readLine'))
+    li = []
+    for file in file_list:
+        upload_file = {}
+        if os.path.splitext(file.filename)[-1] == '.csv':
+            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
+            upload_file['name'] = file.filename
+            upload_file['file_list'] = data.values.tolist()
+        else:
+            columns = pd.read_excel(file, keep_default_na=False).columns
+            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
+            print(len(dataValue))
+            upload_file['name'] = file.filename
+            upload_file['file_list'] = []
+            upload_file['file_list'].append(columns.to_list())
+            for i in dataValue:
+                upload_file['file_list'].append(i.tolist())
+    li.append(upload_file)
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>", li)
+    return APIResponse(200, li).body()
 
 
 @select.route("/allTable", methods=["POST"])
