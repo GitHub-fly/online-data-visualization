@@ -2,9 +2,9 @@ import time
 import pandas as pd
 import os
 import json
+import simplejson as spjson
 
 from decimal import *
-from pandas.io import json
 from datetime import datetime
 from . import select  # . 表示同目录层级下
 from app.utils.APIResponse import APIResponse
@@ -301,8 +301,8 @@ def filter_data():
     }
     :return:
     """
-    print(Redis.read('test'))
-    print('============================进入filter_data接口============================')
+    app.logger.info(Redis.read('test'))
+    app.logger.info('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
     col_all = obj['allColNameList']
@@ -339,8 +339,8 @@ def filter_data():
     # 设置别名
     res_pd_data.columns = obj['aliasList']
     res_json_data = res_pd_data.to_json(orient='records')
-    res_data = json.loads(res_json_data)
-    print('执行时间：', time.time() - start)
+    res_data = spjson.loads(res_json_data)
+    app.logger.info('执行时间：'+ str(time.time() - start))
     return APIResponse(200, res_data).body()
 
 
