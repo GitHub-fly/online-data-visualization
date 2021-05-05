@@ -432,3 +432,51 @@ def get_dimensionality_indicator():
         'indicator': indicator
     }
     return APIResponse(200, data).body()
+
+
+@select.route('/getChartData', methods=['POST'])
+def get_chart_data():
+    """
+    查询某张表中某个字段的所有数据
+    columnName: 指定字段数据
+    其它属性为必选项
+    {
+        "tableName": "ncov_china",
+        "columnName": ["city", "add_ensure"],
+        "sqlType": "postgresql",
+        "userName": "postgres",
+        "password": "root",
+        "host": "localhost",
+        "port": "5432",
+        "database": "postgres"
+    }
+    :return:
+    """
+    start = time.time()
+    obj = request.get_json()
+    pool = pool_post_conn(obj)
+    conn = pool.connection()
+    cur = conn.cursor()
+    sql = 'SELECT '
+    if (not obj.__contains__('columnName')) or len(obj['columnName']) == 0:
+        sql = sql + '*'
+    else:
+        sql = sql + ', '.join(obj['columnName'])
+    # 拼接表名和分页查询的参数
+    sql = (sql + ' FROM {};').format(obj['tableName'])
+    cur.execute(sql)
+    data = cur.fetchall()
+    cur.close()
+    conn.close()
+    end = time.time()
+    # 上锁开始在全局数组内追加数据
+    lock.acquire()
+    global all_data_list
+    index = len(all_data_list)
+    column_name = tuple(obj['columnName'])
+    data.insert(0, column_name)
+    all_data_list.append(data)
+    lock.release()
+    print('执行时间:', end - start)
+    print(data[0])
+    return APIResponse(200, {'allDataListIndex': index}).body()

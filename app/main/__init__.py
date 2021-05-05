@@ -35,11 +35,12 @@ def create_app(dev_name):
     db.init_app(app)  # 实例化的数据库配置信息
 
     # 注册蓝图
-    from app.api import add, delete, select, update, database
+    from app.api import add, delete, select, update, database, login
     # 绑定包里面的蓝图对象
     app.register_blueprint(add.add, url_prefix="/add")
     app.register_blueprint(delete.delete, url_prefix="/delete")
     app.register_blueprint(select.select, url_prefix="/select")
     app.register_blueprint(update.update, url_prefix="/update")
     app.register_blueprint(database.database, url_prefix="/database")
+    app.register_blueprint(login.login, url_prefix="/login")
     return app
