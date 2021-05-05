@@ -42,7 +42,6 @@ def upload_files():
             for i in dataValue:
                 upload_file['file_list'].append(i.tolist())
     li.append(upload_file)
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>", li)
     return APIResponse(200, li).body()
 
 
@@ -340,7 +339,7 @@ def filter_data():
     res_pd_data.columns = obj['aliasList']
     res_json_data = res_pd_data.to_json(orient='records')
     res_data = spjson.loads(res_json_data)
-    app.logger.info('执行时间：'+ str(time.time() - start))
+    app.logger.info('执行时间：' + str(time.time() - start))
     return APIResponse(200, res_data).body()
 
 
@@ -360,50 +359,77 @@ def get_dimensionality_indicator():
     :return: 维度数组和指标数组
     """
     obj = request.get_json()
-    conn = get_post_conn(obj)
-    cursor = conn.cursor()
     # 维度数组
     dimensionality = []
     # 指标数组
     indicator = []
-    sql = """
-        SELECT
-            A.attname AS CO,
-            concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
-        FROM
-            pg_class AS C,
-            pg_attribute AS A,
-            pg_type AS T 
-        WHERE
-            C.relname = '{}'
-            AND A.attnum > 0
-            AND A.attrelid = C.oid 
-            AND A.atttypid = T.oid
-    """.format(obj['tableName'])
-    cursor.execute(sql)
-    data = cursor.fetchall()
     in_id = 0
     di_id = 0
-    for tu in data:
-        item = tu[1]
-        if ('int' in item) or ('float' in item):
-            indicator.append({
-                'id': in_id,
-                'name': tu[0],
-                'dataType': item
-            })
-            in_id += 1
-        if ('varchar' in item) or ('char' in item):
-            dimensionality.append({
-                'id': di_id,
-                'name': tu[0],
-                'dataType': item
-            })
-            di_id += 1
+    if obj is None:
+        file = request.files.getlist('file')[0]
+        if os.path.splitext(file.filename)[-1] == '.csv':
+            csv_data = pd.read_csv(file, keep_default_na=False, header=0)
+            # 获取各列的数据类型
+            series = csv_data.dtypes
+            print(series)
+            for index, value in series.iteritems():
+                if ('int' in str(value)) or ('float' in str(value)):
+                    indicator.append({
+                        'id': in_id,
+                        'name': str(index),
+                        'dataType': str(value)
+                    })
+                    in_id += 1
+                else:
+                    dimensionality.append({
+                        'id': di_id,
+                        'name': str(index),
+                        'dataType': str(value)
+                    })
+                    di_id += 1
+        else:
+            # 此处为 excel 文件的读取方法
+            pass
+    else:
+        conn = get_post_conn(obj)
+        cursor = conn.cursor()
+        sql = """
+            SELECT
+                A.attname AS CO,
+                concat_ws('', T.typname, SUBSTRING(format_type(A.atttypid, A.atttypmod) FROM '\(.*\)')) AS TYPE
+            FROM
+                pg_class AS C,
+                pg_attribute AS A,
+                pg_type AS T 
+            WHERE
+                C.relname = '{}'
+                AND A.attnum > 0
+                AND A.attrelid = C.oid 
+                AND A.atttypid = T.oid
+        """.format(obj['tableName'])
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        for tu in data:
+            item = tu[1]
+            if ('int' in item) or ('float' in item):
+                indicator.append({
+                    'id': in_id,
+                    'name': tu[0],
+                    'dataType': item
+                })
+                in_id += 1
+            if ('varchar' in item) or ('char' in item):
+                dimensionality.append({
+                    'id': di_id,
+                    'name': tu[0],
+                    'dataType': item
+                })
+                di_id += 1
     data = {
         'dimensionality': dimensionality,
         'indicator': indicator
     }
+    print(data)
     return APIResponse(200, data).body()
 
 
