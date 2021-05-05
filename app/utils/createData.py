@@ -1,7 +1,7 @@
 import psycopg2
 
 
-conn = psycopg2.connect(database='airfast', user='postgres', password='root', host='localhost', port=5432)
+conn = psycopg2.connect(database='postgres', user='postgres', password='root', host='localhost', port=5432)
 cursor = conn.cursor()
 
 
@@ -54,6 +54,7 @@ def type_reset():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> bc6d8da07301236afdea8e4ece8ec2ac4b04f1d4
@@ -72,13 +73,18 @@ def type_reset():
     double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
 
 >>>>>>> 524490394e5772d8d531115e1319444ab3f1ce35
+=======
+    int_arr = ['flt_nbr', 'flt_seg_arrv_hh', 'flt_seg_dpt_hh', 'flt_seg_seq_nbr', 'flt_seg_dpt_mm', 'flt_seg_arrv_mm',
+               'leg_qty', 'cls_cpc_qty', 'pax_qty', 'fc_pax_qty', 'grp_pax_qty', 'ffp_pax_qty']
+    double_arr = ['net_amt', 'y_fr_amt', 'flt_seg_dstnc']
+>>>>>>> b53f650064729ba1b9bf59daf001339a3079758b
     for i in int_arr:
-        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
+        sql = 'ALTER TABLE test ALTER COLUMN {} TYPE INT USING {}::integer'.format(i, i)
         cursor.execute(sql)
         print(sql)
 
     for i in double_arr:
-        sql = 'ALTER TABLE sample_1k_flts ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
+        sql = 'ALTER TABLE test ALTER COLUMN {} TYPE double precision USING {}::double precision'.format(i, i)
         cursor.execute(sql)
         print(sql)
 
