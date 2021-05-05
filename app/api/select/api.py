@@ -20,28 +20,30 @@ all_data_list = []
 lock = threading.Lock()
 
 
-
 @select.route("/uploadFile", methods=["POST"])
 def upload_files():
     files = request.files
+    form = request.form
     file_list = files.getlist('file')
+    file_getReadLine = int(form.get('readLine'))
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None)
+            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
         else:
             columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False, ).values
-    upload_file['name'] = file.filename
-    upload_file['file_list'] = []
-    upload_file['file_list'].append(columns.to_list())
-    for i in dataValue:
-        upload_file['file_list'].append(i.tolist())
+            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
+            print(len(dataValue))
+            upload_file['name'] = file.filename
+            upload_file['file_list'] = []
+            upload_file['file_list'].append(columns.to_list())
+            for i in dataValue:
+                upload_file['file_list'].append(i.tolist())
     li.append(upload_file)
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", li)
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>", li)
     return APIResponse(200, li).body()
 
 
@@ -233,6 +235,7 @@ def select_all_table_column():
                 return obj_param.strftime("%Y-%m-%d")
             else:
                 return json.JSONEncoder.default(self, obj_param)
+
     data_json = json.dumps(data, cls=Encoder)
     data_loads = json.loads(data_json)
     print(data_loads)
@@ -287,7 +290,6 @@ def select_table_column(self):
     print(data)
     close_con(conn, cur)
     return APIResponse(200, data).body()
-
 
 
 @select.route("/filterData", methods=["POST"])
