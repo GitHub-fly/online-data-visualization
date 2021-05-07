@@ -60,7 +60,6 @@ def select_all_table():
     print('============================进入all_table接口============================')
     # 获取前端传来的连接对象
     conn_obj = request.get_json()
-    print("连接对象：", conn_obj)
     # 定义空数组，盛放连接中所有的表名
     table_name_all = []
 
@@ -171,7 +170,6 @@ def select_all_data():
     offset = res[1]
     cur.execute('SELECT * FROM {} as t LIMIT {} offset {};'.format(select_obj['tableName'], offset, start))
     data = cur.fetchall()
-    print(data)
     close_con(conn, cur)
     return APIResponse(200, data).body()
 
@@ -236,7 +234,6 @@ def select_all_table_column():
 
     data_json = json.dumps(data, cls=Encoder)
     data_loads = json.loads(data_json)
-    print(data_loads)
     close_con(conn, cur)
     return APIResponse(200, data_loads).body()
 
@@ -285,7 +282,6 @@ def select_table_column(self):
     # 执行 sql
     cur.execute(sql)
     data = cur.fetchall()
-    print(data)
     close_con(conn, cur)
     return APIResponse(200, data).body()
 
@@ -371,7 +367,6 @@ def get_dimensionality_indicator():
             csv_data = pd.read_csv(file, keep_default_na=False, header=0)
             # 获取各列的数据类型
             series = csv_data.dtypes
-            print(series)
             for index, value in series.iteritems():
                 if ('int' in str(value)) or ('float' in str(value)):
                     indicator.append({
