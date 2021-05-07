@@ -228,7 +228,7 @@ def select_all_table_column():
         def default(self, obj_param):
             if isinstance(obj_param, Decimal):
                 return float(obj_param)
-            elif isinstance(obj_param, datetime.datetime):
+            elif isinstance(obj_param, datetime.date()):
                 return obj.strftime('%Y-%m-%d %H:%M:%S')
             elif isinstance(obj_param, datetime.date):
                 return obj_param.strftime("%Y-%m-%d")

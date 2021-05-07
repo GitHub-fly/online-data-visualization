@@ -5,6 +5,7 @@
 import logging
 
 from flask import Flask
+from flask import Flask, make_response
 from flask_sqlalchemy import SQLAlchemy
 
 from config import config_map
@@ -20,14 +21,14 @@ def create_app(dev_name):
     """
     app = Flask(__name__)
 
-    # @app.after_request
-    # def after(resp):
-    #     resp = make_response(resp)
-    #     resp.headers['Access-Control-Allow-Origin'] = '*'
-    #     resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    #     resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with, Content-Type, Authorization'
-    #     # resp.headers['Content-Type'] = 'application/json'
-    #     return resp
+    @app.after_request
+    def after(resp):
+        resp = make_response(resp)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with, Content-Type, Authorization'
+        # resp.headers['Content-Type'] = 'application/json'
+        return resp
 
     # 让本地服务器所有的 URL 都允许跨域请求
     CORS(app, resources=r'/*')
