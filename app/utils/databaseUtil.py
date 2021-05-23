@@ -25,6 +25,7 @@ def get_post_engine(obj):
         obj['port'], obj['database']
     ))
 
+
 def pool_post_conn(obj):
     """
     获取 postgres 数据库的连接对象，采用数据连接池技术

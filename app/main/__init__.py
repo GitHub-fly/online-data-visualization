@@ -4,7 +4,6 @@
 """
 import logging
 
-from flask import Flask
 from flask import Flask, make_response
 from flask_sqlalchemy import SQLAlchemy
 

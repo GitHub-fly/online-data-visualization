@@ -18,8 +18,9 @@ class Config:
 # 开发环境
 class DevelopmentConfig(Config):
     """开发模式的配置信息"""
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:123321@localhost:5433/postgres'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@localhost:3306/db_online_data_visualization?charset=utf8'
     SESSION_REDIS = redis.Redis(host='127.0.0.1', port=6379, password="root", db=2)  # 操作的redis配置
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     DEBUG = True
 
 

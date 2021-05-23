@@ -62,9 +62,9 @@ def get_user_info():
     if user_info:
         status = add_user(user_info)
         if status["code"] == 20000:
-            return redirect("http://0.0.0.0:9999/#/data?user=" + str(user_info["id"]))
+            return redirect("http://online.xueni.top:9999/#/data?user=" + str(user_info["id"]))
         else:
-            return redirect("http://0.0.0.0:9999/#/errPage")
+            return redirect("http://online.xueni.top:9999/#/errPage")
 
 
 def add_user(user_info):
