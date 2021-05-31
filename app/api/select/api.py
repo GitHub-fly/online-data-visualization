@@ -340,7 +340,7 @@ def filter_data():
     res_pd_data.columns = obj['aliasList']
     res_json_data = res_pd_data.to_json(orient='records')
     res_data = spjson.loads(res_json_data)
-    app.logger.info('执行时间：'+ str(time.time() - start))
+    app.logger.info('执行时间：' + str(time.time() - start))
     return APIResponse(200, res_data).body()
 
 
