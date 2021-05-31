@@ -2,9 +2,11 @@ import time
 import os
 import pandas as pd
 
+from app.models import UserApiBhv
 from app.utils.databaseUtil import close_con, get_post_conn
 from pandas.io import json
 from app.common.Global import all_data_list, lock
+from manage import db
 
 
 def fetchall_data(pool, obj, item, res_queue):
@@ -33,10 +35,11 @@ def fetchall_data(pool, obj, item, res_queue):
     close_con(conn, cur)
 
 
-def read_file_data(file_list: list):
+def read_file_data(file_list: list, user_id):
     """
     读取文件数据方法
     :param file_list: 文件对象数组
+    :param user_id: 用户 id
     :return:
     """
     file_data = []
@@ -46,22 +49,31 @@ def read_file_data(file_list: list):
             data = pd.read_csv(file, keep_default_na=False)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
+            data_count = data.shape[0]
+            user_api_bhv = UserApiBhv(user_id=user_id, data_count=data_count, api_name="数据分析接口")
+            db.session.add(user_api_bhv)
         else:
+            data = pd.read_excel(file, keep_default_na=False)
             columns = pd.read_excel(file, keep_default_na=False).columns
             rows = pd.read_excel(file, keep_default_na=False).values
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
             upload_file['file_list'].append(columns.to_list())
+            data_count = data.shape[0]
+            user_api_bhv = UserApiBhv(user_id=user_id, data_count=data_count, api_name="数据分析接口")
+            db.session.add(user_api_bhv)
             for i in rows:
                 upload_file['file_list'].append(i.tolist())
         file_data.append(upload_file)
+
     return file_data
 
 
-def get_sql_chart_data(obj):
+def get_sql_chart_data(obj, user_id):
     """
     获取数据库表中的所有数据
     :param obj:
+    :param user_id:
     :return:
     """
     conn = get_post_conn(obj)
@@ -75,6 +87,9 @@ def get_sql_chart_data(obj):
     sql = (sql + ' FROM {};').format(obj['tableName'])
     cur.execute(sql)
     data = cur.fetchall()
+    user_api_bhv = UserApiBhv(user_id=user_id, data_count=len(data), api_name="数据分析接口")
+    db.session.add(user_api_bhv)
+
     cur.close()
     conn.close()
     # 上锁开始在全局数组内追加数据
@@ -85,14 +100,15 @@ def get_sql_chart_data(obj):
     return index
 
 
-def get_file_chart_data(files):
+def get_file_chart_data(files, user_id):
     """
     获取 csv 等文件数据
     :param files:
+    :param user_id:
     :return:
     """
     file_list = files.getlist('file')
-    file_obj_list = read_file_data(file_list)
+    file_obj_list = read_file_data(file_list, user_id)
     # 每个字段的数据存放在 column_data 内部，形式：['1', '7864']
     column_data = file_obj_list[0]['file_list']
     # 上锁开始在全局数组内追加数据

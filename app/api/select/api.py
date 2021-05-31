@@ -14,9 +14,11 @@ from flask import request
 from .service.selectService import get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
 from ...common.Global import all_data_list
+from ...models import UserApiBhv
 from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
 from flask import current_app as app
+from manage import db
 
 
 @select.route("/uploadFile", methods=["POST"])
@@ -24,24 +26,28 @@ def upload_files():
     files = request.files
     form = request.form
     file_list = files.getlist('file')
-    file_getReadLine = int(form.get('readLine'))
+    print(file_list)
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
+            data = pd.read_csv(file, keep_default_na=False, header=None)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
+            # 行数
+            data_count = data.shape[0]
+            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传csv文件接口")
+            db.session.add(user_api_bhv)
         else:
             columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
+            dataValue = pd.read_excel(file, keep_default_na=False).values
             print(len(dataValue))
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
             upload_file['file_list'].append(columns.to_list())
             for i in dataValue:
                 upload_file['file_list'].append(i.tolist())
-    li.append(upload_file)
+        li.append(upload_file)
     return APIResponse(200, li).body()
 
 
@@ -147,6 +153,7 @@ def select_all_data():
     limitCount：可选项，默认为100条
     其它属性为必选项
     {
+        "userId": 1
         "tableName": "ncov_china",
         "sqlType": "postgresql",
         "userName": "postgres",
@@ -282,6 +289,8 @@ def select_table_column(self):
     # 执行 sql
     cur.execute(sql)
     data = cur.fetchall()
+    user_api_bhv = UserApiBhv(user_id=obj['userId'], data_count=len(data), api_name="上传csv文件接口")
+    db.session.add(user_api_bhv)
     close_con(conn, cur)
     return APIResponse(200, data).body()
 
@@ -430,14 +439,13 @@ def get_dimensionality_indicator():
 
 @select.route('/getChartData', methods=['POST'])
 def get_chart_data():
-    Redis.write("test", "测试Redis", 120)
-    start = time.time()
     """
     图表数据初始化接口
     参数：数据库连接对象的基本信息   或者   一个文件对象
     columnName: 指定字段数据
     其它属性为必选项
     {
+        "userId": 1,
         "tableName": "ncov_china",
         "columnName": ["city", "add_ensure"],
         "sqlType": "postgresql",
@@ -449,12 +457,15 @@ def get_chart_data():
     }
     :return: 全局数据列表的索引值
     """
+    Redis.write("test", "测试Redis", 120)
+    start = time.time()
     obj = request.get_json()
     if obj is None:
         files = request.files
-        index = get_file_chart_data(files)
+        form = request.form
+        index = get_file_chart_data(files, form.get('userId'))
     else:
-        index = get_sql_chart_data(obj)
+        index = get_sql_chart_data(obj, obj['userId'])
     end = time.time()
     print('执行时间:', end - start)
     app.logger.info('图表数据初始化接口的执行时间为:' + str((end - start)))

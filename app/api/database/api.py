@@ -43,6 +43,6 @@ def get_data_type_info():
     li = md.TDataType.query.filter_by(is_disabled=1).all()
     res_li = []
     for item in li:
-        res_li.append(item.jsondata())
+        res_li.append(item.json_data())
     app.logger.info("查询所有的可接入数据源的数据:" + str(res_li)[0:30] + '.....')
     return APIResponse(200, res_li).body()

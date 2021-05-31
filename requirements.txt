@@ -3,3 +3,4 @@ pandas
 numpy
 sqlalchemy
 flask
+flask-migrate==2.7.0
