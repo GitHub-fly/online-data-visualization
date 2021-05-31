@@ -2,6 +2,8 @@ from . import database
 from flask import request
 from sqlalchemy import create_engine
 from ...utils.APIResponse import APIResponse
+import app.models as md
+from flask import current_app as app
 
 
 @database.route("/conn", methods=["POST"])
@@ -30,3 +32,17 @@ def change_sql_conn():
     print('关闭数据库连接')
     conn.close()
     return APIResponse(200, '连接成功').body()
+
+
+@database.route("/allDataTypeInfo", methods=["POST"])
+def get_data_type_info():
+    """
+    查询所有的可接入数据源的数据
+    :return:
+    """
+    li = md.TDataType.query.filter_by(is_disabled=1).all()
+    res_li = []
+    for item in li:
+        res_li.append(item.json_data())
+    app.logger.info("查询所有的可接入数据源的数据:" + str(res_li)[0:30] + '.....')
+    return APIResponse(200, res_li).body()

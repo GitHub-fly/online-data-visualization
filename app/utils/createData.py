@@ -23,7 +23,7 @@ def table_rename():
     所以建议所有的表名都改为小写字母
     :return:
     """
-    cursor.execute('ALTER TABLE public."nCov_china_0313" RENAME TO ncov_chain')
+    cursor.execute('ALTER TABLE public.ncov RENAME TO ncov_chain')
     conn.commit()
     close_con(conn, cursor)
 

@@ -4,6 +4,7 @@
 import redis
 
 redis_store = redis.Redis(host='127.0.0.1', port=6379, db=1)  # 操作的redis配置
+host = 'rm-bp1itj68te5655569ro.mysql.rds.aliyuncs.com'
 
 
 class Config:
@@ -18,8 +19,11 @@ class Config:
 # 开发环境
 class DevelopmentConfig(Config):
     """开发模式的配置信息"""
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:123321@localhost:5433/postgres'
+    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://xiaowo_root:Xiaowo_mysql@{host}:3306/db_online_data_visualization?charset=utf8'
     SESSION_REDIS = redis.Redis(host='127.0.0.1', port=6379, password="root", db=2)  # 操作的redis配置
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True    # 自动提交 commit记录
+    # SQLALCHEMY_ECHO = True  # 显示数据库语句
     DEBUG = True
 
 

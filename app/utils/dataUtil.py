@@ -1,5 +1,4 @@
 import time
-import pandas as pd
 
 
 def switch_time(obj):
