@@ -7,6 +7,8 @@ from app.utils.databaseUtil import close_con, get_post_conn
 from pandas.io import json
 from app.common.Global import all_data_list, lock
 from manage import db
+from app.utils.Redis import Redis
+from flask import current_app as app
 
 
 def fetchall_data(pool, obj, item, res_queue):
@@ -89,15 +91,26 @@ def get_sql_chart_data(obj, user_id):
     data = cur.fetchall()
     user_api_bhv = UserApiBhv(user_id=user_id, data_count=len(data), api_name="数据分析接口")
     db.session.add(user_api_bhv)
-
     cur.close()
     conn.close()
+    """
+    1. 全局变量存储方式
+    """
     # 上锁开始在全局数组内追加数据
-    lock.acquire()
-    index = len(all_data_list)
-    all_data_list.append(data)
-    lock.release()
-    return index
+    # lock.acquire()
+    # index = len(all_data_list)
+    # all_data_list.append(data)
+    # lock.release()
+    """
+    2. 整合 Redis 缓存
+    """
+    if Redis.is_exist(str(conn)):
+        app.logger.warning('指定的 key 已存在')
+        return str(conn)
+    else:
+        app.logger.info('存入redis ----------> ' + str(conn))
+        Redis.write(str(conn), data)
+        return str(conn)
 
 
 def get_file_chart_data(files, user_id):
@@ -111,12 +124,24 @@ def get_file_chart_data(files, user_id):
     file_obj_list = read_file_data(file_list, user_id)
     # 每个字段的数据存放在 column_data 内部，形式：['1', '7864']
     column_data = file_obj_list[0]['file_list']
+    """
+    1. 全局变量存储方式
+    """
     # 上锁开始在全局数组内追加数据
-    lock.acquire()
-    index = len(all_data_list)
-    all_data_list.append(column_data)
-    lock.release()
-    return index
+    # lock.acquire()
+    # index = len(all_data_list)
+    # all_data_list.append(column_data)
+    # lock.release()
+    """
+    2. 整合 Redis 缓存
+    """
+    if Redis.is_exist(str(file_list[0])):
+        app.logger.warning('指定的 key 已存在')
+        return str(file_list[0])
+    else:
+        app.logger.info('存入redis ----------> ' + str(file_list[0]))
+        Redis.write(str(file_list[0]), column_data)
+        return str(file_list[0])
 
 
 def filter_sql(obj):
