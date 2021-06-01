@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import json
 import simplejson as spjson
-import ast
 
 from decimal import *
 from datetime import datetime
@@ -306,19 +305,13 @@ def filter_data():
     }
     :return:
     """
+    app.logger.info(Redis.read('test'))
     app.logger.info('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
     col_all = obj['allColNameList']
     col = obj['colNameList']
-    """
-    1. 全局变量拿取方式
-    """
-    # data_all = all_data_list[obj['allDataListIndex']]
-    """
-    2. redis 缓存拿取
-    """
-    data_all = ast.literal_eval(Redis.read(obj['allDataListIndex']))    # redis 里面存入的是字符串，需要转换一下
+    data_all = all_data_list[obj['allDataListIndex']]
     # 将对应表的所有数据转换数据类型为 dataFrame 型
     all_df = pd.DataFrame.from_records(data_all, columns=col_all)
     # 将指定列取出，组成单独的 df
@@ -440,6 +433,7 @@ def get_dimensionality_indicator():
         'dimensionality': dimensionality,
         'indicator': indicator
     }
+    print(data)
     return APIResponse(200, data).body()
 
 
@@ -469,10 +463,10 @@ def get_chart_data():
     if obj is None:
         files = request.files
         form = request.form
-        key = get_file_chart_data(files, form.get('userId'))
+        index = get_file_chart_data(files, form.get('userId'))
     else:
-        key = get_sql_chart_data(obj, obj['userId'])
+        index = get_sql_chart_data(obj, obj['userId'])
     end = time.time()
     print('执行时间:', end - start)
-    app.logger.info('图表数据初始化接口的执行时间为：' + str((end - start)))
-    return APIResponse(200, {'allDataListIndex': key}).body()
+    app.logger.info('图表数据初始化接口的执行时间为:' + str((end - start)))
+    return APIResponse(200, {'allDataListIndex': index}).body()
