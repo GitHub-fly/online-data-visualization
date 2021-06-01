@@ -95,7 +95,6 @@ class TUser(db.Model):
             'avatar': self.avatar,
             'role_id': self.role_id,
             'is_login': self.is_login,
-            'role_id': self.role_id,
             'is_disabled': self.is_disabled,
             'create_time': self.create_time,
             'hometown': self.hometown,
@@ -105,5 +104,5 @@ class TUser(db.Model):
         }
 
     def __repr__(self):
-        return '<TUser %r>' % self.api_name
+        return '<TUser %r>' % self.account
 
