@@ -44,7 +44,7 @@ def get_data_type_info():
     查询所有的可接入数据源的数据
     :return:
     """
-    li = md.TDataType.query.filter_by(is_disabled=1).all()
+    li = md.TDataType.query.filter_by(is_disabled=1).first()
     res_li = []
     for item in li:
         res_li.append(item.json_data())

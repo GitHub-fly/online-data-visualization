@@ -2,6 +2,7 @@ import requests
 from sqlalchemy.sql.functions import now
 
 from app.models import TUser
+import app.models as md
 from app.utils.databaseUtil import get_post_conn, close_con, get_post_engine
 from . import login
 from app.utils.APIResponse import APIResponse
@@ -30,7 +31,7 @@ def get_user_info():
         "accept": "application/json"
     }
     try:
-        res = requests.post(token_url, headers=header, timeout=5)
+        res = requests.post(token_url, headers=header, timeout=10)
     except:
         return "第三方登录超时，请重新登录！"
     if res.status_code == 200:
@@ -47,8 +48,8 @@ def get_user_info():
         'accept': 'application/json',
         'Authorization': access_token
     }
-    isLogin = 0
     res = requests.get(user_url, headers=headers)
+    # 构造用户对象
     if res.status_code == 200:
         res_dict = res.json()
         app.logger.info(res_dict)
@@ -66,11 +67,12 @@ def get_user_info():
     else:
         user_info = None
         app.logger.warning('错误：user_info请求失败！', user_info)
-    print(user_info)
+    app.logger.info(user_info)
 
     # 将用户信息写入数据库
     if user_info:
         status = add_user(user_info)
+        app.logger.info(status)
         if status["code"] == 20000:
             return redirect("http://localhost:9999/#/data?user=" + str(user_info["openId"]))
         else:
@@ -87,14 +89,24 @@ def add_user(user_info):
     app.logger.info("=============将用户信息写入数据库=============")
 
     try:
-        t_user = TUser(account=user_info["account"], password=user_info["password"], nickname=user_info["nickName"],
-                       avatar=user_info["avatar"], is_login=user_info["isLogin"], role_id=user_info["roleId"], is_disabled=user_info["isDisabled"], open_id=user_info["openId"])
-        db.session.add(t_user)
-        status = {
-            "code": 20000,
-            "message": "写入成功！"
-        }
-    except:
+        obj = md.TUser.query.filter_by(open_id=user_info["openId"]).first()
+        if obj is not None:
+            status = {
+                "code": 20000,
+                "message": "存在用户，拒绝重复写入！"
+            }
+            return status
+        else:
+            t_user = TUser(account=user_info["account"], password=user_info["password"], nickname=user_info["nickName"],
+                           avatar=user_info["avatar"], is_login=user_info["isLogin"], role_id=user_info["roleId"],
+                           is_disabled=user_info["isDisabled"], open_id=user_info["openId"])
+            db.session.add(t_user)
+            status = {
+                "code": 20000,
+                "message": "写入成功！"
+            }
+    except Exception as e:
+        print(e)
         status = {
             "code": 20001,
             "message": "写入失败！"
@@ -105,22 +117,10 @@ def add_user(user_info):
 
 @login.route("/selectUser", methods=["POST"])
 def select_user():
-    conn_obj = {
-        "tableName": "t_user",
-        "sqlType": "postgresql",
-        "userName": "postgres",
-        "password": "root",
-        "host": "localhost",
-        "port": "5432",
-        "database": "postgres"
-    }
     obj = request.get_json()
     print(obj)
-    user_id = obj["userId"]
-    conn = get_post_conn(conn_obj)
-    cursor = conn.cursor()
-    sql = "SELECT id, avatar, nickname, is_login FROM T_user WHERE id={}".format(user_id)
-    cursor.execute(sql)
-    data = cursor.fetchall()[0]
-    user_info = {"userId": data[0], "avatar": data[1], "nickName": data[2], "isLogin": data[3]}
-    return APIResponse(200, user_info).body()
+    open_id = obj["openId"]
+    obj = md.TUser.query.filter_by(open_id=open_id).first()
+    data = obj.json_data()
+    print(data)
+    return APIResponse(200, data).body()

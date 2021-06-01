@@ -15,3 +15,6 @@ class FunType(Enum):
     MEDIAN = 'median'
     # 分组数量
     SIZE = 'size'
+
+    # 状态码
+    ADDSUCCESS = 20000
