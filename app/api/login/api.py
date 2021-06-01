@@ -128,3 +128,18 @@ def select_user():
 
     return APIResponse(200, data).body()
 
+
+@login.route("login", methods=["POST"])
+def login():
+    res = request.get_json()
+    print(res)
+    obj = md.TUser.query.filter_by(account=res["account"]).first()
+    if obj is None:
+        return APIResponse(201, "请先使用GitHub登录").body()
+    else:
+        data = obj.json_data()
+        if data["password"] == res["password"]:
+            print(data)
+            return APIResponse(200, data).body()
+        else:
+            return APIResponse(201, "账号或密码错误").body()
