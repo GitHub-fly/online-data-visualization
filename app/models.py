@@ -63,6 +63,7 @@ class UserApiBhv(db.Model):
         return '<userApiBhv %r>' % self.api_name
 
 
+
 class TRcord(db.Model):
     __tablename__ = 't_record'
     id = db.Column(db.Integer, primary_key=True)
@@ -89,3 +90,48 @@ class TRcord(db.Model):
 
     def __repr__(self):
         return '<tRcord %r>' % self.parent_id
+
+class TUser(db.Model):
+    """
+    用户表
+    """
+    __tablename__ = 't_user'
+    user_id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    account = db.Column(db.String(255))
+    password = db.Column(db.String(255))
+    nickname = db.Column(db.String(255))
+    avatar = db.Column(db.String(255))
+    is_login = db.Column(db.Integer)
+    role_id = db.Column(db.Integer)
+    is_disabled = db.Column(db.Integer)
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    hometown = db.Column(db.String(255))
+    sex = db.Column(db.String(255))
+    open_id = db.Column(db.Integer)
+
+    def json_data(self):
+        """
+        将对象转换为字典数据
+        :return:
+        """
+        return {
+            'user_id': self.user_id,
+            'account': self.account,
+            'password': self.password,
+            'nickname': self.nickname,
+            'avatar': self.avatar,
+            'role_id': self.role_id,
+            'is_login': self.is_login,
+            'is_disabled': self.is_disabled,
+            'create_time': self.create_time,
+            'hometown': self.hometown,
+            'update_time': self.update_time,
+            'sex': self.sex,
+            'open_id': self.open_id,
+        }
+
+    def __repr__(self):
+        return '<TUser %r>' % self.account
+
+

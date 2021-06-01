@@ -189,25 +189,31 @@ def add_user_behavior():
     form = request.form
     file_list = obj.getlist('file')
     folder_name = form.get('folderName')
-    parentId =0
+    parentId = 0
     file_type = 0
-    t_record = TRcord(name=folder_name)
-    li = t_record.query.filter_by(name=folder_name,user_id = int(form.get("userId"))).all()
+    t_record = TRcord(name=folder_name, user_id=int(form.get("userId")))
+    li = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
     if len(li) == 0:
         t_record = TRcord(user_id=int(form.get("userId")), name=folder_name, parent_id=1, upload_type=0)
         db.session.add(t_record)
+        result = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
+        for item in result:
+            if (item.name == folder_name):
+                parentId = item.id
     else:
         for item in li:
-            if(item.name == folder_name):
+            if (item.name == folder_name):
                 parentId = item.id
-    if(parentId != 0):
+    if (parentId != 0):
         for file in file_list:
             if os.path.splitext(file.filename)[-1] == '.csv':
                 file_type = 1
-                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId, upload_type=file_type)
+                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                                  upload_type=file_type)
                 db.session.add(t_record)
             else:
                 file_type = 2
-                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId, upload_type=file_type)
+                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                                  upload_type=file_type)
                 db.session.add(t_record)
     return APIResponse(200, '成功').body()

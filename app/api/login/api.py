@@ -1,11 +1,15 @@
 import requests
 from sqlalchemy.sql.functions import now
 
-from app.utils.databaseUtil import get_post_conn, close_con
+from app.models import TUser
+from app.utils.databaseUtil import get_post_conn, close_con, get_post_engine
 from . import login
 from app.utils.APIResponse import APIResponse
-from flask import request, redirect
+from flask import request, redirect, Flask
 from flask import current_app as app
+from manage import db
+
+import app.models as md
 
 client_id = "75bfbb55511431752d68"
 client_secrets = "d8dc6368a486c01f77dba202d117c102e1a001f5"
@@ -27,7 +31,10 @@ def get_user_info():
     header = {
         "accept": "application/json"
     }
-    res = requests.post(token_url, headers=header)
+    try:
+        res = requests.post(token_url, headers=header, timeout=5)
+    except:
+        return "第三方登录超时，请重新登录！"
     if res.status_code == 200:
         res_dict = res.json()
         print(res_dict)
@@ -49,24 +56,30 @@ def get_user_info():
         app.logger.info(res_dict)
         isLogin = 1
         user_info = {
-            "id": res_dict["id"],
             "nickName": res_dict["login"],
+            "account": res_dict["login"],
             "avatar": res_dict["avatar_url"],
-            "isLogin": isLogin
+            "isLogin": isLogin,
+            "password": 123123,
+            "roleId": 1,
+            "isDisabled": 1,
+            "openId": res_dict["id"]
         }
     else:
         user_info = None
         app.logger.warning('错误：user_info请求失败！', user_info)
+    print(user_info)
 
     # 将用户信息写入数据库
     if user_info:
         status = add_user(user_info)
         if status["code"] == 20000:
-            return redirect("http://online.xueni.top:9999/#/data?user=" + str(user_info["id"]))
+            return redirect("http://localhost:9999/#/data?user=" + str(user_info["openId"]))
         else:
-            return redirect("http://online.xueni.top:9999/#/errPage")
+            return redirect("http://localhost:9999/#/errPage")
 
 
+# @login.route("/adduser", methods=["GET"])
 def add_user(user_info):
     """
     将用户信息添加到数据库
@@ -74,58 +87,30 @@ def add_user(user_info):
     :return:
     """
     app.logger.info("=============将用户信息写入数据库=============")
-    conn_obj = {
-        "tableName": "t_user",
-        "sqlType": "postgresql",
-        "userName": "postgres",
-        "password": "root",
-        "host": "localhost",
-        "port": "5432",
-        "database": "postgres"
 
-    }
-
-    conn = get_post_conn(conn_obj)
-    cursor = conn.cursor()
-    sql = "INSERT INTO t_user(id, update_time, is_disabled, avatar, role, create_time, nickname, is_login) " \
-          "VALUES ({}, {}, {}, {}, {}, {}, {}, {})" \
-        .format(user_info["id"], now(), 0, "'" + user_info["avatar"] + "'", 1, now(),
-                "'" + user_info["nickName"] + "'", user_info["isLogin"])
-    # try:
-    cursor.execute(sql)
-    conn.commit()
-    status = {
-        "code": 20000,
-        "message": "写入成功！"
-    }
-    # except:
-    #     status = {
-    #         "code": 20001,
-    #         "message": "写入失败！"
-    #     }
+    try:
+        t_user = TUser(account=user_info["account"], password=user_info["password"], nickname=user_info["nickName"],
+                       avatar=user_info["avatar"], is_login=user_info["isLogin"], role_id=user_info["roleId"], is_disabled=user_info["isDisabled"], open_id=user_info["openId"])
+        db.session.add(t_user)
+        status = {
+            "code": 20000,
+            "message": "写入成功！"
+        }
+    except:
+        status = {
+            "code": 20001,
+            "message": "写入失败！"
+        }
     app.logger.info(status["message"])
-    close_con(conn, cursor)
     return status
 
 
 @login.route("/selectUser", methods=["POST"])
 def select_user():
-    conn_obj = {
-        "tableName": "t_user",
-        "sqlType": "postgresql",
-        "userName": "postgres",
-        "password": "root",
-        "host": "localhost",
-        "port": "5432",
-        "database": "postgres"
-    }
     obj = request.get_json()
     print(obj)
-    user_id = obj["userId"]
-    conn = get_post_conn(conn_obj)
-    cursor = conn.cursor()
-    sql = "SELECT id, avatar, nickname, is_login FROM T_user WHERE id={}".format(user_id)
-    cursor.execute(sql)
-    data = cursor.fetchall()[0]
-    user_info = {"userId": data[0], "avatar": data[1], "nickName": data[2], "isLogin": data[3]}
-    return APIResponse(200, user_info).body()
+    open_id = obj["openId"]
+    obj = md.TUser.query.filter_by(open_id=open_id).first()
+    data = obj.json_data()
+    print(data)
+    return APIResponse(200, data).body()
