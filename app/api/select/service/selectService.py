@@ -104,13 +104,13 @@ def get_sql_chart_data(obj, user_id):
     """
     2. 整合 Redis 缓存
     """
-    if Redis.is_exist(str(conn)):
+    if Redis.is_exist(str(obj)):
         app.logger.warning('指定的 key 已存在')
-        return str(conn)
+        return str(obj)
     else:
-        app.logger.info('存入redis ----------> ' + str(conn))
-        Redis.write(str(conn), data)
-        return str(conn)
+        app.logger.info('存入redis ----------> ' + str(obj))
+        Redis.write(str(obj), data)
+        return str(obj)
 
 
 def get_file_chart_data(files, user_id):

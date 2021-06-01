@@ -14,7 +14,6 @@ from app.utils.databaseUtil import get_post_conn, close_con, paging, get_post_en
 from flask import request
 from .service.selectService import get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
-from ...common.Global import all_data_list
 from ...models import UserApiBhv, TRecord
 from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
@@ -27,28 +26,37 @@ def upload_files():
     files = request.files
     form = request.form
     file_list = files.getlist('file')
-    file_getReadLine = int(form.get('readLine'))
-    print(file_getReadLine)
-    print(file_list)
+    file_get_read_line = int(form.get('readLine'))
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
+            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_get_read_line)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
+            # 行数
+            data_count = data.shape[0]
+            app.logger.info('记录该用户调用上传 csv 文件接口信息')
+            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 csv 文件接口")
+            db.session.add(user_api_bhv)
+            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=0)
+            db.session.add(record)
         else:
-            data_count = pd.read_excel(file, keep_default_na=False)
-            columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
-            print(len(dataValue))
+            data = pd.read_excel(file, keep_default_na=False)
+            columns = data.columns
+            data_value = data.values
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
             upload_file['file_list'].append(columns.to_list())
-            for i in dataValue:
+            for i in data_value:
                 upload_file['file_list'].append(i.tolist())
+            # app.logger.info('记录该用户调用上传 excel 文件接口信息')
+            data_count = data.shape[0]
+            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 excel 文件接口")
+            db.session.add(user_api_bhv)
+            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=1)
+            db.session.add(record)
         li.append(upload_file)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>..", li)
     return APIResponse(200, li).body()
 
 
@@ -463,7 +471,6 @@ def get_chart_data():
     }
     :return: 全局数据列表的索引值
     """
-    Redis.write("test", "测试Redis", 120)
     start = time.time()
     obj = request.get_json()
     if obj is None:
