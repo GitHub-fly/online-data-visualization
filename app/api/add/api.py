@@ -5,7 +5,7 @@ from flask import request
 from app.utils.APIResponse import APIResponse
 from . import add
 from ..select.api import select_table_column
-from ...models import TRcord
+from ...models import TRecord
 from manage import db
 
 
@@ -191,10 +191,10 @@ def add_user_behavior():
     folder_name = form.get('folderName')
     parentId = 0
     file_type = 0
-    t_record = TRcord(name=folder_name, user_id=int(form.get("userId")))
+    t_record = TRecord(name=folder_name, user_id=int(form.get("userId")))
     li = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
     if len(li) == 0:
-        t_record = TRcord(user_id=int(form.get("userId")), name=folder_name, parent_id=1, upload_type=0)
+        t_record = TRecord(user_id=int(form.get("userId")), name=folder_name, parent_id=1, upload_type=0)
         db.session.add(t_record)
         result = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
         for item in result:
@@ -208,12 +208,12 @@ def add_user_behavior():
         for file in file_list:
             if os.path.splitext(file.filename)[-1] == '.csv':
                 file_type = 1
-                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                t_record = TRecord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
                                   upload_type=file_type)
                 db.session.add(t_record)
             else:
                 file_type = 2
-                t_record = TRcord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                t_record = TRecord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
                                   upload_type=file_type)
                 db.session.add(t_record)
     return APIResponse(200, '成功').body()

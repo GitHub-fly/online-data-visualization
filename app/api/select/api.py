@@ -28,37 +28,27 @@ def upload_files():
     form = request.form
     file_list = files.getlist('file')
     file_getReadLine = int(form.get('readLine'))
+    print(file_getReadLine)
     print(file_list)
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None,nrows=file_getReadLine)
+            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
-            # 行数
-            data_count = data.shape[0]
-            app.logger.info('记录该用户调用上传 csv 文件接口信息')
-            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 csv 文件接口")
-            db.session.add(user_api_bhv)
-            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=0)
-            db.session.add(record)
         else:
             data_count = pd.read_excel(file, keep_default_na=False)
             columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False,nrows=file_getReadLine).values
+            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
             print(len(dataValue))
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
             upload_file['file_list'].append(columns.to_list())
             for i in dataValue:
                 upload_file['file_list'].append(i.tolist())
-            app.logger.info('记录该用户调用上传 excel 文件接口信息')
-            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 excel 文件接口")
-            db.session.add(user_api_bhv)
-            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=1)
-            db.session.add(record)
         li.append(upload_file)
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>..", li)
     return APIResponse(200, li).body()
 
 
@@ -328,7 +318,7 @@ def filter_data():
     """
     2. redis 缓存拿取
     """
-    data_all = ast.literal_eval(Redis.read(obj['allDataListIndex']))    # redis 里面存入的是字符串，需要转换一下
+    data_all = ast.literal_eval(Redis.read(obj['allDataListIndex']))  # redis 里面存入的是字符串，需要转换一下
     # 将对应表的所有数据转换数据类型为 dataFrame 型
     all_df = pd.DataFrame.from_records(data_all, columns=col_all)
     # 将指定列取出，组成单独的 df

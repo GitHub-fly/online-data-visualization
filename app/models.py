@@ -62,34 +62,6 @@ class UserApiBhv(db.Model):
     def __repr__(self):
         return '<userApiBhv %r>' % self.api_name
 
-
-class TRcord(db.Model):
-    __tablename__ = 't_record'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    name = db.Column(db.String(255))
-    parent_id = db.Column(db.Integer)
-    upload_type = db.Column(db.Integer)
-    is_disabled = db.Column(db.Integer)
-    create_time = db.Column(db.DateTime, default=datetime.datetime.now)
-    update_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-
-    def json_data(self):
-        return {
-            'id': self.id,
-            'userId': self.user_id,
-            'name': self.name,
-            'parent_id': self.parent_id,
-            'upload_type': self.upload_type,
-            'is_disabled': self.is_disabled,
-            'create_time': self.create_time,
-            'update_time': self.update_time
-        }
-
-    def __repr__(self):
-        return '<tRcord %r>' % self.parent_id
-
-
 class TUser(db.Model):
     """
     用户表
@@ -132,8 +104,7 @@ class TUser(db.Model):
 
     def __repr__(self):
         return '<TUser %r>' % self.account
-<<<<<<< HEAD
-=======
+
 
 
 class TRecord(db.Model):
@@ -165,4 +136,4 @@ class TRecord(db.Model):
 
     def __repr__(self):
         return '<tRecord %r>' % self.name
->>>>>>> bb9fd458894394683f4279b92e7d326377685764
+
