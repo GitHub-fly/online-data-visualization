@@ -1,8 +1,12 @@
+import os
+import re
+
 from flask import request
 from app.utils.APIResponse import APIResponse
 from . import add
 from ..select.api import select_table_column
-import re
+from ...models import TRecord
+from manage import db
 
 
 def calculate(n1, n2, operator):
@@ -146,7 +150,6 @@ def final_calc(formula_list):
 @add.route('/addNewColumn', methods=['POST'])
 def add_new_table_column():
     obj = request.get_json()
-    print("clolo", obj)
     column_arr = {'sqlType': obj['sqlType'], 'userName': obj['userName'], 'password': obj['password'],
                   'host': obj['host'],
                   'port': obj['port'], 'database': obj['database'], 'limitCount': obj['limitCount'],
@@ -154,11 +157,12 @@ def add_new_table_column():
                   'tableName': obj['tableName'],
                   'page': obj['page']
                   }
+    print(column_arr)
     formula = []
     res_list = []
     operate_list = ['+', '-', '*', '/', '(', ')']
     result_list = select_table_column(column_arr)['data']
-    print("数组数据", result_list)
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>数组数据", result_list)
     for item in result_list:
         character = []
         i = 0
@@ -177,3 +181,39 @@ def add_new_table_column():
         res_list.append(res)
     print(res_list)
     return APIResponse(200, res_list).body()
+
+
+@add.route("/addUserBehavior", methods=['POST'])
+def add_user_behavior():
+    obj = request.files
+    form = request.form
+    file_list = obj.getlist('file')
+    folder_name = form.get('folderName')
+    parentId = 0
+    file_type = 0
+    t_record = TRecord(name=folder_name, user_id=int(form.get("userId")))
+    li = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
+    if len(li) == 0:
+        t_record = TRecord(user_id=int(form.get("userId")), name=folder_name, parent_id=1, upload_type=0)
+        db.session.add(t_record)
+        result = t_record.query.filter_by(name=folder_name, user_id=int(form.get("userId"))).all()
+        for item in result:
+            if (item.name == folder_name):
+                parentId = item.id
+    else:
+        for item in li:
+            if (item.name == folder_name):
+                parentId = item.id
+    if (parentId != 0):
+        for file in file_list:
+            if os.path.splitext(file.filename)[-1] == '.csv':
+                file_type = 1
+                t_record = TRecord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                                  upload_type=file_type)
+                db.session.add(t_record)
+            else:
+                file_type = 2
+                t_record = TRecord(user_id=int(form.get("userId")), name=file.filename, parent_id=parentId,
+                                  upload_type=file_type)
+                db.session.add(t_record)
+    return APIResponse(200, '成功').body()

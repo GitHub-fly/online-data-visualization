@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import json
 import simplejson as spjson
+import ast
 
 from decimal import *
 from datetime import datetime
@@ -14,7 +15,7 @@ from flask import request
 from .service.selectService import get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
 from ...common.Global import all_data_list
-from ...models import UserApiBhv
+from ...models import UserApiBhv, TRecord
 from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
 from flask import current_app as app
@@ -26,21 +27,20 @@ def upload_files():
     files = request.files
     form = request.form
     file_list = files.getlist('file')
+    file_getReadLine = int(form.get('readLine'))
+    print(file_getReadLine)
     print(file_list)
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None)
+            data = pd.read_csv(file, keep_default_na=False, header=None, nrows=file_getReadLine)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
-            # 行数
-            data_count = data.shape[0]
-            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传csv文件接口")
-            db.session.add(user_api_bhv)
         else:
+            data_count = pd.read_excel(file, keep_default_na=False)
             columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False).values
+            dataValue = pd.read_excel(file, keep_default_na=False, nrows=file_getReadLine).values
             print(len(dataValue))
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
@@ -48,6 +48,7 @@ def upload_files():
             for i in dataValue:
                 upload_file['file_list'].append(i.tolist())
         li.append(upload_file)
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>..", li)
     return APIResponse(200, li).body()
 
 
@@ -305,13 +306,19 @@ def filter_data():
     }
     :return:
     """
-    app.logger.info(Redis.read('test'))
     app.logger.info('============================进入filter_data接口============================')
     start = time.time()
     obj = request.get_json()
     col_all = obj['allColNameList']
     col = obj['colNameList']
-    data_all = all_data_list[obj['allDataListIndex']]
+    """
+    1. 全局变量拿取方式
+    """
+    # data_all = all_data_list[obj['allDataListIndex']]
+    """
+    2. redis 缓存拿取
+    """
+    data_all = ast.literal_eval(Redis.read(obj['allDataListIndex']))  # redis 里面存入的是字符串，需要转换一下
     # 将对应表的所有数据转换数据类型为 dataFrame 型
     all_df = pd.DataFrame.from_records(data_all, columns=col_all)
     # 将指定列取出，组成单独的 df
@@ -433,7 +440,6 @@ def get_dimensionality_indicator():
         'dimensionality': dimensionality,
         'indicator': indicator
     }
-    print(data)
     return APIResponse(200, data).body()
 
 
@@ -463,10 +469,10 @@ def get_chart_data():
     if obj is None:
         files = request.files
         form = request.form
-        index = get_file_chart_data(files, form.get('userId'))
+        key = get_file_chart_data(files, form.get('userId'))
     else:
-        index = get_sql_chart_data(obj, obj['userId'])
+        key = get_sql_chart_data(obj, obj['userId'])
     end = time.time()
     print('执行时间:', end - start)
-    app.logger.info('图表数据初始化接口的执行时间为:' + str((end - start)))
-    return APIResponse(200, {'allDataListIndex': index}).body()
+    app.logger.info('图表数据初始化接口的执行时间为：' + str((end - start)))
+    return APIResponse(200, {'allDataListIndex': key}).body()

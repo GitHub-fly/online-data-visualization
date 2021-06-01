@@ -62,7 +62,6 @@ class UserApiBhv(db.Model):
     def __repr__(self):
         return '<userApiBhv %r>' % self.api_name
 
-
 class TUser(db.Model):
     """
     用户表
@@ -105,4 +104,36 @@ class TUser(db.Model):
 
     def __repr__(self):
         return '<TUser %r>' % self.account
+
+
+
+class TRecord(db.Model):
+    __tablename__ = 't_record'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    user_id = db.Column(db.Integer)
+    parent_id = db.Column(db.Integer)
+    name = db.Column(db.String(255))
+    upload_type = db.Column(db.Integer)
+    is_disabled = db.Column(db.Integer, default=1)
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+
+    def json_data(self):
+        """
+        将对象转换为字典数据
+        :return:
+        """
+        return {
+            'id': self.id,
+            'userId': self.user_id,
+            'parentId': self.parent_id,
+            'name': self.name,
+            'uploadType': self.upload_type,
+            'isDisabled': self.is_disabled,
+            'createTime': self.create_time,
+            'updateTime': self.update_time,
+        }
+
+    def __repr__(self):
+        return '<tRecord %r>' % self.name
 

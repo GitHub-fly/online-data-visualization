@@ -10,6 +10,8 @@ from flask import request, redirect, Flask
 from flask import current_app as app
 from manage import db
 
+import app.models as md
+
 client_id = "75bfbb55511431752d68"
 client_secrets = "d8dc6368a486c01f77dba202d117c102e1a001f5"
 
@@ -123,6 +125,7 @@ def select_user():
     obj = md.TUser.query.filter_by(open_id=open_id).first()
     data = obj.json_data()
     print(data)
+
     return APIResponse(200, data).body()
 
 
