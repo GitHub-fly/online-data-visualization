@@ -13,7 +13,7 @@ class Config:
     # flask-session配置
     SESSION_TYPE = "redis"
     SESSION_USE_SIGNER = True  # 对cookie中session_id进行隐藏处理 加密混淆
-    PERMANENT_SESSION_LIFETIME = 20  # session数据的有效期，单位秒
+    PERMANENT_SESSION_LIFETIME = 3600 * 24  # session数据的有效期，单位秒
 
 
 # 开发环境

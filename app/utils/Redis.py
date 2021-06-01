@@ -16,6 +16,11 @@ class Redis(object):
         return r
 
     @classmethod
+    def is_exist(cls, key):
+        r = cls._get_redis_conn()
+        return r.exists(key)
+
+    @classmethod
     def write(cls, key, value, expire=None):
         """
         写入键值对
