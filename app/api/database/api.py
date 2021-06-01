@@ -1,9 +1,13 @@
 from . import database
 from flask import request
 from sqlalchemy import create_engine
+
+from manage import db
 from ...utils.APIResponse import APIResponse
 import app.models as md
 from flask import current_app as app
+
+from ...utils.databaseUtil import get_post_conn
 
 
 @database.route("/conn", methods=["POST"])
@@ -46,3 +50,20 @@ def get_data_type_info():
         res_li.append(item.json_data())
     app.logger.info("查询所有的可接入数据源的数据:" + str(res_li)[0:30] + '.....')
     return APIResponse(200, res_li).body()
+
+
+@database.route("/uploadSql", methods=["POST"])
+def upload_sql():
+    obj = request.get_json()
+    conn = get_post_conn(obj)
+    cursor = conn.cursor()
+    cursor.execute(f"select count(*) from {obj['tableName']}")
+    data = cursor.fetchall()
+    conn.close()
+    cursor.close()
+    app.logger.info('记录该用户调用上传 sql 文件接口信息')
+    user_api_bhv = md.UserApiBhv(user_id=obj['userId'], data_count=data, api_name="上传 sql 文件接口")
+    db.session.add(user_api_bhv)
+    record = md.TRecord(user_id=obj['userId'], name='', upload_type=2)
+    db.session.add(record)
+    return APIResponse(200, '上传成功').body()

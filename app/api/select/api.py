@@ -15,7 +15,7 @@ from flask import request
 from .service.selectService import get_file_chart_data, get_sql_chart_data
 from ...common.EnumList import FunType
 from ...common.Global import all_data_list
-from ...models import UserApiBhv
+from ...models import UserApiBhv, TRecord
 from ...utils.Redis import Redis
 from ...utils.dataUtil import switch_time
 from flask import current_app as app
@@ -37,9 +37,13 @@ def upload_files():
             upload_file['file_list'] = data.values.tolist()
             # 行数
             data_count = data.shape[0]
-            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传csv文件接口")
+            app.logger.info('记录该用户调用上传 csv 文件接口信息')
+            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 csv 文件接口")
             db.session.add(user_api_bhv)
+            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=0)
+            db.session.add(record)
         else:
+            data_count = pd.read_excel(file, keep_default_na=False)
             columns = pd.read_excel(file, keep_default_na=False).columns
             dataValue = pd.read_excel(file, keep_default_na=False).values
             print(len(dataValue))
@@ -48,6 +52,11 @@ def upload_files():
             upload_file['file_list'].append(columns.to_list())
             for i in dataValue:
                 upload_file['file_list'].append(i.tolist())
+            app.logger.info('记录该用户调用上传 excel 文件接口信息')
+            user_api_bhv = UserApiBhv(user_id=int(form.get('userId')), data_count=data_count, api_name="上传 excel 文件接口")
+            db.session.add(user_api_bhv)
+            record = TRecord(user_id=int(form.get('userId')), name='', upload_type=1)
+            db.session.add(record)
         li.append(upload_file)
     return APIResponse(200, li).body()
 
