@@ -61,3 +61,31 @@ class UserApiBhv(db.Model):
 
     def __repr__(self):
         return '<userApiBhv %r>' % self.api_name
+
+
+class TRcord(db.Model):
+    __tablename__ = 't_record'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    name = db.Column(db.String(255))
+    parent_id = db.Column(db.Integer)
+    upload_type = db.Column(db.Integer)
+    is_disabled = db.Column(db.Integer)
+    create_time = db.Column(db.DateTime)
+    update_time = db.Column(db.DateTime)
+
+    def json_data(self):
+        return {
+            'id': self.id,
+            'userId': self.user_id,
+            'name': self.name,
+            'parent_id': self.parent_id,
+            'upload_type': self.upload_type,
+            'is_disabled': self.is_disabled,
+            'create_time': self.create_time,
+            'update_time': self.update_time
+        }
+
+
+    def __repr__(self):
+        return '<tRcord %r>' % self.parent_id
