@@ -63,7 +63,6 @@ class UserApiBhv(db.Model):
         return '<userApiBhv %r>' % self.api_name
 
 
-
 class TRcord(db.Model):
     __tablename__ = 't_record'
     id = db.Column(db.Integer, primary_key=True)
@@ -72,8 +71,8 @@ class TRcord(db.Model):
     parent_id = db.Column(db.Integer)
     upload_type = db.Column(db.Integer)
     is_disabled = db.Column(db.Integer)
-    create_time = db.Column(db.DateTime)
-    update_time = db.Column(db.DateTime)
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
 
     def json_data(self):
         return {
@@ -87,9 +86,9 @@ class TRcord(db.Model):
             'update_time': self.update_time
         }
 
-
     def __repr__(self):
         return '<tRcord %r>' % self.parent_id
+
 
 class TUser(db.Model):
     """
@@ -133,5 +132,3 @@ class TUser(db.Model):
 
     def __repr__(self):
         return '<TUser %r>' % self.account
-
-

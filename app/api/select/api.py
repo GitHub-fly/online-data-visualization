@@ -26,12 +26,13 @@ def upload_files():
     files = request.files
     form = request.form
     file_list = files.getlist('file')
+    file_getReadLine = int(form.get('readLine'))
     print(file_list)
     li = []
     for file in file_list:
         upload_file = {}
         if os.path.splitext(file.filename)[-1] == '.csv':
-            data = pd.read_csv(file, keep_default_na=False, header=None)
+            data = pd.read_csv(file, keep_default_na=False, header=None,nrows=file_getReadLine)
             upload_file['name'] = file.filename
             upload_file['file_list'] = data.values.tolist()
             # 行数
@@ -40,7 +41,7 @@ def upload_files():
             db.session.add(user_api_bhv)
         else:
             columns = pd.read_excel(file, keep_default_na=False).columns
-            dataValue = pd.read_excel(file, keep_default_na=False).values
+            dataValue = pd.read_excel(file, keep_default_na=False,nrows=file_getReadLine).values
             print(len(dataValue))
             upload_file['name'] = file.filename
             upload_file['file_list'] = []
