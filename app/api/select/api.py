@@ -42,7 +42,7 @@ def upload_files():
             record = TRecord(user_id=int(form.get('userId')), name='', upload_type=0)
             db.session.add(record)
         else:
-            data = pd.read_excel(file, keep_default_na=False)
+            data = pd.read_excel(file, keep_default_na=False, nrows=file_get_read_line)
             columns = data.columns
             data_value = data.values
             upload_file['name'] = file.filename
@@ -108,7 +108,7 @@ def select_all_table():
         table_name_all = df['TABLE_NAME'].tolist()
 
         # table_name_all = [{id: 0, name: 'db_mysql',isSelect: false}]
-    print("所有表名的查询结果：", table_name_all)
+    app.logger.info("所有表名的查询结果：" + str(table_name_all))
     return APIResponse(200, table_name_all).body()
 
 
@@ -151,7 +151,7 @@ def select_all_column():
         # 执行sql，得到查询结果
         df = pd.read_sql(sql_str, mysql_engine)
         column_all = df['COLUMN_NAME'].tolist()
-    print("所有字段的查询结果：", column_all)
+    app.logger.info("所有字段的查询结果：" + str(column_all))
     return APIResponse(200, column_all).body()
 
 
@@ -212,7 +212,6 @@ def select_all_table_column():
     :return:
     """
     obj = request.get_json()
-    print(obj)
     conn = get_post_conn(obj)
     cur = conn.cursor()
     # 获取分页结果
@@ -480,6 +479,5 @@ def get_chart_data():
     else:
         key = get_sql_chart_data(obj, obj['userId'])
     end = time.time()
-    print('执行时间:', end - start)
     app.logger.info('图表数据初始化接口的执行时间为：' + str((end - start)))
     return APIResponse(200, {'allDataListIndex': key}).body()

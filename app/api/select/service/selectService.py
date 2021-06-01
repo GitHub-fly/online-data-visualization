@@ -105,7 +105,7 @@ def get_sql_chart_data(obj, user_id):
     2. 整合 Redis 缓存
     """
     if Redis.is_exist(str(obj)):
-        app.logger.warning('指定的 key 已存在')
+        app.logger.warning('目标数据已存在=================直接拿取缓存中的数据')
         return str(obj)
     else:
         app.logger.info('存入redis ----------> ' + str(obj))
