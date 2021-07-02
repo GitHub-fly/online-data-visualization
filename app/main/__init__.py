@@ -48,7 +48,7 @@ def create_app(dev_name):
         '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
-    db.init_app(app)  # 实例化的数据库配置信息
+    db.init_app(app)  # 实例化的数据库配置信息2
 
     # 注册蓝图
     from app.api import add, delete, select, update, database, login

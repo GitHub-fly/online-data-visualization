@@ -62,6 +62,7 @@ class UserApiBhv(db.Model):
     def __repr__(self):
         return '<userApiBhv %r>' % self.api_name
 
+
 class TUser(db.Model):
     """
     用户表
