@@ -34,7 +34,7 @@ def create_app(dev_name):
     config_class = config_map.get(dev_name)
     app.config.from_object(config_class)  # 从类中读取需要的信息
     # ========================整合 redis========================
-    app.config['REDIS_HOST'] = "127.0.0.1"  # redis数据库地址
+    app.config['REDIS_HOST'] = "112.126.61.191"  # redis数据库地址
     app.config['REDIS_PORT'] = 6379  # redis 端口号
     app.config['REDIS_DB'] = 0  # 数据库名
     app.config['REDIS_EXPIRE'] = 3600 * 24  # redis 过期时间一天，单位 s
